@@ -1,0 +1,123 @@
+.pista-animation {
+  position: relative;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  padding: 35px 20px;
+  box-sizing: border-box;
+  background: #e5f2d5;
+  color: #435238;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.animation-heading {
+  position: relative;
+  z-index: 2;
+}
+
+.animation-heading span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #687b4e;
+}
+
+.animation-heading h2 {
+  margin: 12px 0 0;
+  font-size: clamp(26px, 4vw, 48px);
+  line-height: 1.1;
+}
+
+.animation-stage {
+  position: relative;
+  width: min(100%, 650px);
+  height: min(48vh, 380px);
+  min-height: 260px;
+  margin: 15px auto;
+}
+
+.falling-pistas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.falling-pista {
+  position: absolute;
+  top: 0;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  opacity: 0;
+  filter: drop-shadow(0 4px 5px rgb(67 82 56 / 15%));
+  will-change: transform, opacity;
+}
+
+.pista-bucket {
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 50%;
+  width: min(65%, 300px);
+  max-height: 100%;
+  object-fit: contain;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 12px 12px rgb(67 82 56 / 12%));
+  will-change: transform, opacity;
+}
+
+.animation-message {
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+}
+
+.animation-message h3 {
+  margin: 0 0 8px;
+  font-size: clamp(19px, 3vw, 28px);
+}
+
+.animation-message p {
+  margin: 0;
+  color: #75624d;
+  font-size: 15px;
+}
+
+@media (max-width: 600px) {
+  .pista-animation {
+    padding: 25px 14px;
+  }
+
+  .animation-heading span {
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+
+  .animation-stage {
+    height: 38vh;
+    min-height: 230px;
+  }
+
+  .falling-pista {
+    width: 34px;
+    height: 34px;
+  }
+
+  .pista-bucket {
+    width: min(75%, 250px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .falling-pista,
+  .pista-bucket,
+  .animation-message {
+    will-change: auto;
+  }
+}

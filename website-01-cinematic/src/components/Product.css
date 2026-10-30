@@ -1,0 +1,292 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #a9c18f;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #435238;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+}
+
+.product-page {
+  padding: 1rem;
+}
+
+.product-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  background: #e5f2d5;
+  border-radius: 32px;
+  overflow: hidden;
+}
+
+/* BREADCRUMB */
+
+.breadcrumb {
+  padding: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: #75624d;
+  font-size: 0.95rem;
+}
+
+.breadcrumb a {
+  color: #687b4e;
+  font-weight: 600;
+}
+
+/* PRODUCT HERO */
+
+.product-hero {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.product-image {
+  background: #fff9eb;
+  border-radius: 24px;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.product-image img {
+  width: min(100%, 420px);
+  object-fit: contain;
+}
+
+.product-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-tag {
+  width: fit-content;
+  background: #fff9eb;
+  color: #75624d;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.product-details h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: #435238;
+}
+
+.flavour {
+  font-weight: 600;
+  color: #8da675;
+  margin-bottom: 1rem;
+}
+
+.description {
+  color: #75624d;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #435238;
+  margin-bottom: 1.5rem;
+}
+
+.price span {
+  display: block;
+  font-size: 0.95rem;
+  color: #75624d;
+  font-weight: 400;
+  margin-top: 0.25rem;
+}
+
+.add-cart-btn {
+  width: 100%;
+  border: none;
+  background: #687b4e;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.add-cart-btn:hover {
+  background: #596a42;
+}
+
+/* BENEFITS */
+
+.benefits-section {
+  padding: 0 1.5rem 3rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.benefit-card {
+  background: #f0f7e8;
+  padding: 1.5rem;
+  border-radius: 20px;
+}
+
+.benefit-card h3 {
+  margin-bottom: 0.75rem;
+}
+
+.benefit-card p {
+  color: #75624d;
+  line-height: 1.6;
+}
+
+/* PRODUCT INFO */
+
+.product-info {
+  background: #c8d8b5;
+  padding: 3rem 1.5rem;
+}
+
+.product-info h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.info-card {
+  background: #fff9eb;
+  padding: 1.5rem;
+  border-radius: 20px;
+}
+
+.info-card h3 {
+  margin-bottom: 0.75rem;
+}
+
+.info-card p {
+  color: #75624d;
+  line-height: 1.6;
+}
+
+/* RELATED FLAVOURS */
+
+.related-products {
+  padding: 3rem 1.5rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.section-tag {
+  display: inline-block;
+  background: #fff9eb;
+  color: #75624d;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.section-header h2 {
+  margin-top: 1rem;
+  color: #435238;
+}
+
+.flavour-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.flavour-card {
+  background: #f0f7e8;
+  padding: 1.5rem;
+  border-radius: 20px;
+}
+
+.flavour-card h3 {
+  margin-bottom: 0.75rem;
+}
+
+.flavour-card p {
+  color: #75624d;
+  line-height: 1.6;
+}
+
+.featured-flavour {
+  background: #fff9eb;
+  border: 2px solid #8da675;
+}
+
+/* TABLET */
+
+@media (min-width: 768px) {
+  .benefits-section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .info-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .flavour-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* DESKTOP */
+
+@media (min-width: 1024px) {
+  .product-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 4rem;
+    padding: 4rem;
+  }
+
+  .product-details h1 {
+    font-size: 3.5rem;
+  }
+
+  .benefits-section {
+    padding: 0 4rem 4rem;
+  }
+
+  .product-info {
+    padding: 4rem;
+  }
+
+  .related-products {
+    padding: 4rem;
+  }
+
+  .add-cart-btn {
+    width: fit-content;
+    min-width: 220px;
+    padding: 1rem 2rem;
+  }
+}
