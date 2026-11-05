@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { formatPrice, imgSrc } from '../lib/api'
+import { discountPercent, formatPrice, imgSrc } from '../lib/api'
 
 /** Product tile: masked image reveal, 3D tilt on hover, shared-element handoff to the quick view. */
 export default function ProductCard({ product, index = 0, onOpen }) {
@@ -14,6 +14,7 @@ export default function ProductCard({ product, index = 0, onOpen }) {
   const imgX = useTransform(sx, [-0.5, 0.5], ['-3%', '3%'])
   const imgY = useTransform(sy, [-0.5, 0.5], ['-3%', '3%'])
 
+  const off = discountPercent(product)
   const move = (e) => {
     if (e.pointerType !== 'mouse') return
     const r = ref.current.getBoundingClientRect()
@@ -47,6 +48,7 @@ export default function ProductCard({ product, index = 0, onOpen }) {
           <img src={imgSrc(product)} alt={product.name} loading="lazy" decoding="async" onError={(e) => { e.currentTarget.src = '/images/massup-01-jar-hero.jpg' }} />
         </motion.div>
         {product.in_stock === false && <span className="badge badge-sold">Sold out</span>}
+        {off > 0 && product.in_stock !== false && <span className="badge badge-off">{off}% off</span>}
         {product.size && <span className="badge">{product.size}</span>}
       </motion.button>
 
@@ -55,7 +57,7 @@ export default function ProductCard({ product, index = 0, onOpen }) {
           <h3>{product.name}</h3>
           <p className="card-flavour">{product.flavour || 'Pistachio'}</p>
         </div>
-        <span className="card-price">{formatPrice(product.price)}</span>
+        <span className="card-price">{off > 0 && <s>{formatPrice(product.mrp)}</s>}{formatPrice(product.price)}</span>
       </div>
     </motion.article>
   )

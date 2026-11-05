@@ -376,3 +376,16 @@ body::after {
 .confirm { width: min(420px, 100%); background: var(--cream); border-radius: 26px; padding: 30px; display: grid; gap: 12px; } .confirm h3 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; } .confirm p { color: var(--muted); }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+
+/* ---------- discounts, reel, shop banner ---------- */
+.card-price s, .modal-price s { color: var(--muted); font-weight: 500; margin-right: 8px; font-size: 0.85em; }
+.badge-off { left: auto; right: 14px; bottom: auto; top: 14px; background: var(--pista); color: var(--forest); }
+.off-tag { margin-left: 10px; font-size: 0.8rem; font-style: normal; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--pista-2); }
+.reel { background: var(--cream); padding: clamp(80px, 10vw, 150px) var(--gutter); overflow: hidden; }
+.reel-head { max-width: 1320px; margin: 0 auto 50px; }
+.reel-row { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: clamp(14px, 2vw, 28px); }
+.reel-card { aspect-ratio: 9 / 16; border-radius: var(--radius); overflow: hidden; background: var(--pista-soft); box-shadow: 0 40px 70px -40px rgba(44, 58, 34, 0.6); }
+.reel-card video { width: 100%; height: 100%; object-fit: cover; }
+.pp-banner { position: relative; margin: 0 var(--gutter); aspect-ratio: 21 / 9; max-height: 70svh; overflow: hidden; border-radius: 28px; background: var(--pista-soft); transform: translateY(-40px); z-index: 2; }
+.pp-banner video { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 700px) { .pp-banner { aspect-ratio: 4 / 3; } }

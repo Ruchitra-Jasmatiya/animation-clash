@@ -8,6 +8,7 @@ import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
 import Footer from '../components/Footer'
 import { useProducts } from '../lib/useProducts'
+import { useSiteMedia } from '../lib/useSiteMedia'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -23,6 +24,8 @@ const RIBBON = ['02-nuts-flying', '03-powder-scoop', '05-shake-swirl', '08-pista
 export default function Products() {
   const root = useRef(null)
   const { products, status, slow, reload } = useProducts()
+  const media = useSiteMedia()
+  const bannerSrc = media.custom('shop_banner_video') ? media.url('shop_banner_video') : ''
   const [q, setQ] = useState('')
   const [sort, setSort] = useState('new')
   const [stockOnly, setStockOnly] = useState(false)
@@ -90,6 +93,12 @@ export default function Products() {
         </div>
       </section>
 
+      {bannerSrc && (
+        <motion.section className="pp-banner" initial={{ clipPath: 'inset(12% 8% 12% 8% round 40px)', opacity: 0.4 }} whileInView={{ clipPath: 'inset(0% 0% 0% 0% round 28px)', opacity: 1 }} viewport={{ once: true, margin: '0px 0px -15% 0px' }} transition={{ duration: 1.3, ease: [0.76, 0, 0.24, 1] }}>
+          <video key={bannerSrc} autoPlay loop muted playsInline preload="metadata"><source src={bannerSrc} /></video>
+        </motion.section>
+      )}
+
       <section className="pp-shop" id="shop">
         <div className="toolbar">
           <label className="search">
@@ -151,7 +160,7 @@ export default function Products() {
         <div className="ribbon-track">
           {RIBBON.map((n, i) => (
             <figure className="ribbon-item" key={n} style={{ '--i': i }}>
-              <img src={`/images/massup-${n}.jpg`} alt="" loading="lazy" />
+              <img src={media.url(`ribbon_${i + 1}`)} alt="" loading="lazy" />
             </figure>
           ))}
         </div>

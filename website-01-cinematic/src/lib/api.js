@@ -12,17 +12,22 @@ export const setToken = (t) => {
 }
 
 /** Uploaded files come back as /media/... (served via the backend); URLs pass through untouched. */
+export const mediaSrc = (s) => (s && s.startsWith('/media/') ? API + s : s)
+
 export function imgSrc(product) {
   const s = (product && (product.image_display || product.image_url)) || ''
-  if (!s) return PLACEHOLDER_IMG
-  if (s.startsWith('/media/')) return API + s
-  return s
+  return s ? mediaSrc(s) : PLACEHOLDER_IMG
 }
 
 export const formatPrice = (value) => {
   const n = Number(value)
   if (!Number.isFinite(n)) return ''
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: n % 1 ? 2 : 0 }).format(n)
+}
+
+export const discountPercent = (p) => {
+  const price = Number(p?.price), mrp = Number(p?.mrp)
+  return mrp > price && price >= 0 ? Math.round(((mrp - price) / mrp) * 100) : 0
 }
 
 async function request(path, { method = 'GET', body, auth = false, signal } = {}) {
@@ -35,6 +40,7 @@ async function request(path, { method = 'GET', body, auth = false, signal } = {}
     signal,
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
   })
+  if (auth && res.status === 401) window.dispatchEvent(new Event('massup:auth-lost'))
   if (res.status === 204) return null
   let data = null
   try { data = await res.json() } catch { /* not json */ }
@@ -66,3 +72,13 @@ export const api = {
   me: () => request('/auth/me/', { auth: true }),
   logout: () => request('/auth/logout/', { method: 'POST', auth: true }),
 }
+
+/** Signed-in calls for the store manager. */
+export const adm = {
+  get: (p) => request(p, { auth: true }),
+  post: (p, body) => request(p, { method: 'POST', body, auth: true }),
+  patch: (p, body) => request(p, { method: 'PATCH', body, auth: true }),
+  put: (p, body) => request(p, { method: 'PUT', body, auth: true }),
+  del: (p) => request(p, { method: 'DELETE', auth: true }),
+}
+export const publicGet = (p) => request(p)

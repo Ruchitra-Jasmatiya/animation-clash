@@ -10,6 +10,7 @@ import ProductCard from '../components/ProductCard'
 import Footer from '../components/Footer'
 import { useApp } from '../lib/app-context'
 import { useProducts } from '../lib/useProducts'
+import { useSiteMedia } from '../lib/useSiteMedia'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -43,6 +44,11 @@ export default function Home() {
   const { ready } = useApp()
   const [active, setActive] = useState(0)
   const { products } = useProducts()
+  const media = useSiteMedia()
+  const heroSrc = media.url('hero_video')
+  const showSrc = media.url('showcase_video')
+  const reels = [1, 2, 3].filter((i) => media.custom(`reel_video_${i}`)).map((i) => media.url(`reel_video_${i}`))
+  const spotSrc = media.url(`spot_${active + 1}`)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -164,13 +170,13 @@ export default function Home() {
         <h1 className="sr-only">MASSUP — Pistachio Protein Powder</h1>
 
         <motion.div className="hero-arch" initial={{ clipPath: 'inset(100% 0 0 0 round 999px 999px 0 0)' }} animate={ready ? { clipPath: 'inset(0% 0 0 0 round 999px 999px 28px 28px)' } : {}} transition={{ duration: 1.6, delay: 0.2, ease: [0.76, 0, 0.24, 1] }}>
-          <video autoPlay loop muted playsInline preload="auto" poster="/images/poster-1.jpg" aria-label="Pouring MASSUP pistachio powder">
-            <source src="/videos/vid1.mp4" type="video/mp4" />
+          <video key={heroSrc} autoPlay loop muted playsInline preload="auto" poster={media.custom('hero_video') ? undefined : '/images/poster-1.jpg'} aria-label="MASSUP product video">
+            <source src={heroSrc} />
           </video>
         </motion.div>
 
-        <img className="hero-float f1" src={img('08-pistachio-macro')} alt="" />
-        <img className="hero-float f2" src={img('02-nuts-flying')} alt="" />
+        <img className="hero-float f1" src={media.url('hero_float_1')} alt="" />
+        <img className="hero-float f2" src={media.url('hero_float_2')} alt="" />
 
         <div className="hero-copy left">
           <Split text="Good fuel." trigger="ready" delay={0.9} className="hero-line" />
@@ -230,9 +236,9 @@ export default function Home() {
           <div className="story-bar" aria-hidden="true"><i /></div>
         </div>
         <div className="story-track">
-          {STORY.map((s) => (
+          {STORY.map((s, i) => (
             <article className="story-card" key={s.no}>
-              <div className="story-img"><img src={s.src} alt={s.title} loading="lazy" /></div>
+              <div className="story-img"><img src={media.url(`story_${i + 1}`)} alt={s.title} loading="lazy" /></div>
               <div className="story-text">
                 <span className="story-no">{s.no}</span>
                 <h3>{s.title}</h3>
@@ -250,12 +256,29 @@ export default function Home() {
           <div className="showcase-row r2">PISTACHIO · PROTEIN · PISTACHIO</div>
         </div>
         <div className="showcase-frame">
-          <video autoPlay loop muted playsInline preload="metadata" poster="/images/poster-2.jpg" aria-label="MASSUP powder in a bowl">
-            <source src="/videos/vid2.mp4" type="video/mp4" />
+          <video key={showSrc} autoPlay loop muted playsInline preload="metadata" poster={media.custom('showcase_video') ? undefined : '/images/poster-2.jpg'} aria-label="MASSUP in motion">
+            <source src={showSrc} />
           </video>
         </div>
         <p className="showcase-caption">One scoop. Zero compromise.</p>
       </section>
+
+      {/* ================= REEL (only when videos are added in the admin) ================= */}
+      {reels.length > 0 && (
+        <section className="reel">
+          <div className="reel-head">
+            <span className="eyebrow">In motion</span>
+            <Split as="h2" text="Watch it *move*" className="h2" />
+          </div>
+          <div className="reel-row">
+            {reels.map((src, i) => (
+              <motion.div className="reel-card" key={src} initial={{ opacity: 0, y: 80, rotate: i % 2 ? 2 : -2 }} whileInView={{ opacity: 1, y: 0, rotate: 0 }} viewport={{ once: true, margin: '0px 0px -10% 0px' }} transition={{ duration: 1, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}>
+                <video autoPlay loop muted playsInline preload="metadata"><source src={src} /></video>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ================= SPOTLIGHT (sticky) ================= */}
       <section className="spot">
@@ -263,7 +286,7 @@ export default function Home() {
           <div className="spot-ring" aria-hidden="true" />
           <div className="spot-stage">
             <AnimatePresence mode="popLayout">
-              <motion.img key={SPOT[active].src} src={SPOT[active].src} alt={SPOT[active].title} initial={{ opacity: 0, scale: 1.12, filter: 'blur(14px)' }} animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} exit={{ opacity: 0, scale: 0.96, filter: 'blur(10px)' }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} />
+              <motion.img key={spotSrc} src={spotSrc} alt={SPOT[active].title} initial={{ opacity: 0, scale: 1.12, filter: 'blur(14px)' }} animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} exit={{ opacity: 0, scale: 0.96, filter: 'blur(10px)' }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} />
             </AnimatePresence>
           </div>
           <div className="spot-dots" aria-hidden="true">
@@ -290,9 +313,9 @@ export default function Home() {
         <div className="gal-grid">
           {GALLERY.map((col, ci) => (
             <div className="gal-col" key={ci}>
-              {col.map((src) => (
-                <figure className="gal-item" key={src} data-cursor="MASSUP">
-                  <img src={src} alt="MASSUP pistachio protein" loading="lazy" />
+              {col.map((_, j) => (
+                <figure className="gal-item" key={j} data-cursor="MASSUP">
+                  <img src={media.url(`gallery_${ci * 3 + j + 1}`)} alt="MASSUP pistachio protein" loading="lazy" />
                 </figure>
               ))}
             </div>

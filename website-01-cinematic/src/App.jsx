@@ -9,7 +9,7 @@ import Cursor from './components/Cursor'
 import Preloader from './components/Preloader'
 import Home from './pages/Home'
 import Products from './pages/Products'
-import Manage from './pages/Manage'
+import AdminApp from './pages/admin/AdminApp'
 
 /** Every route change starts at the top; ScrollTrigger re-measures once the new page is in. */
 function ScrollReset() {
@@ -28,12 +28,12 @@ function AnimatedRoutes() {
   const location = useLocation()
   return (
     <AnimatePresence mode="wait" initial={false}>
-      <motion.div key={location.pathname} className="page" exit={{ opacity: 0, transition: { delay: 0.55, duration: 0.01 } }}>
+      <motion.div key={location.pathname.startsWith('/manage') ? '/manage' : location.pathname} className="page" exit={{ opacity: 0, transition: { delay: 0.55, duration: 0.01 } }}>
         <motion.div className="curtain" aria-hidden="true" initial={{ scaleY: 1, transformOrigin: 'top' }} animate={{ scaleY: 0, transformOrigin: 'top', transition: { duration: 0.8, delay: 0.1, ease: [0.76, 0, 0.24, 1] } }} exit={{ scaleY: 1, transformOrigin: 'bottom', transition: { duration: 0.55, ease: [0.76, 0, 0.24, 1] } }} />
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/manage" element={<Manage />} />
+          <Route path="/manage/*" element={<AdminApp />} />
           <Route path="*" element={<Products />} />
         </Routes>
       </motion.div>
@@ -41,8 +41,10 @@ function AnimatedRoutes() {
   )
 }
 
-export default function App() {
-  const [ready, setReady] = useState(false)
+function Shell() {
+  const { pathname } = useLocation()
+  const isAdmin = pathname.startsWith('/manage')
+  const [ready, setReady] = useState(() => window.location.pathname.startsWith('/manage'))
   const ctx = useMemo(() => ({ ready }), [ready])
 
   useEffect(() => {
@@ -50,15 +52,21 @@ export default function App() {
   }, [ready])
 
   return (
+    <AppContext.Provider value={ctx}>
+      <ScrollReset />
+      {!isAdmin && <Cursor />}
+      {!isAdmin && <Navbar />}
+      <AnimatedRoutes />
+      <AnimatePresence>{!ready && <Preloader key="pre" onDone={() => setReady(true)} />}</AnimatePresence>
+    </AppContext.Provider>
+  )
+}
+
+export default function App() {
+  return (
     <BrowserRouter>
       <SmoothScroll>
-        <AppContext.Provider value={ctx}>
-          <ScrollReset />
-          <Cursor />
-          <Navbar />
-          <AnimatedRoutes />
-          <AnimatePresence>{!ready && <Preloader key="pre" onDone={() => setReady(true)} />}</AnimatePresence>
-        </AppContext.Provider>
+        <Shell />
       </SmoothScroll>
     </BrowserRouter>
   )

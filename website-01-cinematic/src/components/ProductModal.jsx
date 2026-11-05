@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { formatPrice, imgSrc } from '../lib/api'
+import { discountPercent, formatPrice, imgSrc } from '../lib/api'
 import { useLenis } from '../lib/smooth'
 
 export default function ProductModal({ product, onClose, onAdd }) {
@@ -26,7 +26,7 @@ export default function ProductModal({ product, onClose, onAdd }) {
             <div className="modal-info">
               <motion.span className="eyebrow" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>{product.flavour || 'Pistachio'}{product.size ? ` · ${product.size}` : ''}</motion.span>
               <motion.h3 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32, duration: 0.7 }}>{product.name}</motion.h3>
-              <motion.p className="modal-price" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38, duration: 0.7 }}>{formatPrice(product.price)}</motion.p>
+              <motion.p className="modal-price" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38, duration: 0.7 }}>{discountPercent(product) > 0 && <s>{formatPrice(product.mrp)}</s>}{formatPrice(product.price)}{discountPercent(product) > 0 && <em className="off-tag">{discountPercent(product)}% off</em>}</motion.p>
               <motion.p className="modal-desc" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.44, duration: 0.7 }}>{product.description || 'Premium pistachio protein powder from MASSUP.'}</motion.p>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.7 }}>
                 <button className="btn btn-dark btn-lg" disabled={product.in_stock === false} onClick={() => onAdd(product)}>
