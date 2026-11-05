@@ -16,10 +16,16 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
+if not DEBUG and SECRET_KEY.startswith("django-insecure"):
+    raise RuntimeError("Set a real SECRET_KEY environment variable in production.")
+
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "massup-backend.onrender.com",
+]
+ALLOWED_HOSTS += [
+    h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()
 ]
 
 render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
@@ -37,8 +43,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "rest_framework",
+    "rest_framework.authtoken",
     "corsheaders",
     "products",
+    "store",
 ]
 
 
@@ -170,7 +178,52 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://massup-kohl.vercel.app",
+] + [
+    o.strip()
+    for o in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+    if o.strip()
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://massup-backend.onrender.com",
+    "https://massup-kohl.vercel.app",
+] + [
+    o.strip()
+    for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
+
+
+# REST FRAMEWORK
+TOKEN_TTL_HOURS = int(os.environ.get("TOKEN_TTL_HOURS", "12"))
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ["store.auth.ExpiringTokenAuthentication"],
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "300/min",
+        "user": "900/min",
+        "login": "10/min",
+        "coupon": "30/min",
+    },
+}
+
+# Uploads: reject anything bigger than ~6 MB before it is buffered to disk.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "True") == "True"
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    X_FRAME_OPTIONS = "DENY"
 
 
 # DEFAULT PRIMARY KEY
