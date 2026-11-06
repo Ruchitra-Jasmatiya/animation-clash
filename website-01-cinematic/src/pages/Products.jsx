@@ -8,6 +8,7 @@ import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
 import Footer from '../components/Footer'
 import CtaReveal from '../components/CtaReveal'
+import PistaCrack from '../components/Pistacrack'
 import { useProducts } from '../lib/useProducts'
 import { useSiteMedia } from '../lib/useSiteMedia'
 
@@ -33,7 +34,16 @@ function Count({ value }) {
   return <motion.span>{text}</motion.span>
 }
 
-const HERO_FLOATS = ['08-pistachio-macro', '02-nuts-flying', '03-powder-scoop']
+/** Video that plays inside the big green half-circle: it blooms open, then slowly "breathes". */
+function HeroVideo({ src, onFail }) {
+  const [ready, setReady] = useState(false)
+  return (
+    <motion.div className="pp-video" initial={{ clipPath: 'circle(0% at 40% 50%)', scale: 1.4 }} animate={{ clipPath: 'circle(75% at 40% 50%)', scale: 1 }} transition={{ duration: 1.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}>
+      <video className={ready ? 'is-ready' : ''} src={src} autoPlay muted loop playsInline preload="auto" onCanPlay={() => setReady(true)} onError={onFail} />
+      <span className="pp-video-shade" />
+    </motion.div>
+  )
+}
 
 export default function Products() {
   const root = useRef(null)
@@ -43,11 +53,15 @@ export default function Products() {
   const [q, setQ] = useState('')
   const [sort, setSort] = useState('new')
   const [stockOnly, setStockOnly] = useState(false)
+  const [failedVideo, setFailedVideo] = useState('')
   const [flavour, setFlavour] = useState('all')
   const [fresh, setFresh] = useState(() => new Set())
   const seen = useRef(null)
   const [open, setOpen] = useState(null)
   const [toast, setToast] = useState('')
+
+  const heroVideo = media.custom('shop_hero_video') ? media.url('shop_hero_video') : ''
+  const showVideo = !!heroVideo && failedVideo !== heroVideo
 
   const flavours = useMemo(() => [...new Set(products.map((p) => (p.flavour || '').trim()).filter(Boolean))], [products])
   const activeFlavour = flavour === 'all' || flavours.includes(flavour) ? flavour : 'all'
@@ -93,10 +107,8 @@ export default function Products() {
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         gsap.to('.pp-title-wrap', { yPercent: -25, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: '.pp-hero', start: 'top top', end: 'bottom top', scrub: true } })
-        gsap.to('.pp-orb', { yPercent: -80, scale: 1.25, ease: 'none', scrollTrigger: { trigger: '.pp-hero', start: 'top top', end: 'bottom top', scrub: true } })
-        gsap.utils.toArray('.pp-float', root.current).forEach((el, i) =>
-          gsap.to(el, { yPercent: -90 - i * 60, rotate: (i % 2 ? 1 : -1) * 28, ease: 'none', scrollTrigger: { trigger: '.pp-hero', start: 'top top', end: 'bottom top', scrub: true } })
-        )
+        gsap.to('.pp-orb-wrap', { yPercent: -60, scale: 1.2, ease: 'none', scrollTrigger: { trigger: '.pp-hero', start: 'top top', end: 'bottom top', scrub: true } })
+        gsap.to('.pista-stage', { yPercent: -35, ease: 'none', scrollTrigger: { trigger: '.pp-hero', start: 'top top', end: 'bottom top', scrub: true } })
 
         // flavour words slide sideways while you scroll past
         gsap.utils.toArray('.pp-words', root.current).forEach((el, i) =>
@@ -122,10 +134,13 @@ export default function Products() {
   return (
     <main ref={root} className="pp">
       <section className="pp-hero">
-        <div className="pp-orb" aria-hidden="true" />
-        {HERO_FLOATS.map((n, i) => (
-          <motion.img key={n} className={`pp-float f${i + 1}`} src={media.url(`ribbon_${i + 1}`)} alt="" initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.9 + i * 0.15, duration: 1.1, ease: [0.16, 1, 0.3, 1] }} />
-        ))}
+        <div className="pp-orb-wrap" aria-hidden="true">
+          <motion.div className={`pp-orb${showVideo ? ' has-video' : ''}`} initial={{ scale: 0.55, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}>
+            {showVideo && <HeroVideo key={heroVideo} src={heroVideo} onFail={() => setFailedVideo(heroVideo)} />}
+          </motion.div>
+          <i className="pp-ring" />
+        </div>
+        {!showVideo && <PistaCrack />}
         <div className="pp-title-wrap">
           <span className="eyebrow">The collection</span>
           <h1 className="pp-title">

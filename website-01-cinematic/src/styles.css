@@ -279,7 +279,8 @@ body::after {
 .wake { text-align: center; margin-top: 30px; color: var(--muted); font-style: italic; font-family: var(--serif); }
 
 .pp-hero { position: relative; min-height: 74svh; padding: 150px var(--gutter) 70px; display: flex; align-items: flex-end; overflow: hidden; background: var(--pista-light); isolation: isolate; }
-.pp-orb { position: absolute; z-index: -1; width: min(70vw, 760px); aspect-ratio: 1; right: -12vw; top: -8vw; border-radius: 50%; background: radial-gradient(circle at 35% 35%, var(--pista-2), var(--pista) 70%); opacity: 0.8; }
+.pp-orb-wrap { position: absolute; z-index: -1; width: min(70vw, 760px); aspect-ratio: 1; right: -12vw; top: -8vw; }
+.pp-orb { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 35% 35%, var(--pista-2), var(--pista) 70%); box-shadow: 0 60px 120px -60px rgba(44, 58, 34, 0.55); }
 .pp-title-wrap { max-width: 1320px; width: 100%; margin: 0 auto; }
 .pp-title { font-family: var(--serif); font-weight: 400; font-size: clamp(3.6rem, 13vw, 11.5rem); line-height: 0.92; letter-spacing: -0.035em; }
 .pp-title .w-in.is-em { color: var(--olive); }
@@ -443,11 +444,6 @@ em, .w-in.is-em { font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 0; }
 
 /* ---------- shop ---------- */
 .pp-hero { min-height: 82svh; }
-.pp-float { position: absolute; z-index: 0; border-radius: 50%; object-fit: cover; border: 5px solid var(--cream); box-shadow: 0 30px 60px -28px rgba(44, 58, 34, 0.6); aspect-ratio: 1; }
-.pp-float.f1 { width: clamp(90px, 13vw, 200px); right: 22%; top: 24%; }
-.pp-float.f2 { width: clamp(70px, 9vw, 140px); right: 9%; top: 52%; }
-.pp-float.f3 { width: clamp(60px, 7vw, 110px); right: 36%; top: 62%; }
-@media (max-width: 700px) { .pp-float.f1 { right: 8%; top: 20%; } .pp-float.f2 { right: 30%; top: 12%; } .pp-float.f3 { display: none; } }
 .pp-title { font-weight: 400; }
 
 .pp-wordband { background: var(--forest); color: var(--cream); overflow: hidden; padding: 18px 0; display: grid; gap: 2px; }
@@ -504,3 +500,28 @@ em, .w-in.is-em { font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 0; }
   .footer-top .btn { width: 100%; }
 }
 @media (hover: none) { .card-view { opacity: 0; } }
+
+/* ---------- shop hero: video / cracking pistachios inside the half circle ---------- */
+.pp-ring { position: absolute; inset: -4%; border-radius: 50%; border: 1.5px dashed rgba(44, 58, 34, 0.28); animation: spin-slow 48s linear infinite; pointer-events: none; }
+.pp-ring::after { content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--pista-2); border: 2px solid var(--forest); top: 12%; left: 8%; }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.pp-video { position: absolute; inset: 0; }
+.pp-video video { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.2s var(--ease); animation: vid-breathe 16s ease-in-out infinite alternate; }
+.pp-video video.is-ready { opacity: 1; }
+.pp-video-shade { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 70% 50%, transparent 45%, rgba(44, 58, 34, 0.28) 100%), linear-gradient(90deg, rgba(223, 234, 203, 0.55), transparent 38%); }
+@keyframes vid-breathe { from { transform: scale(1); } to { transform: scale(1.09); } }
+
+.pista-stage { position: absolute; z-index: 0; right: 0; top: 0; bottom: 0; width: min(50vw, 640px); pointer-events: none; }
+.nut-bob { position: absolute; }
+.nut-bob.a { right: 12%; top: 14%; width: clamp(190px, 25vw, 340px); }
+.nut-bob.b { right: 46%; top: 50%; width: clamp(110px, 14vw, 190px); }
+.nut-bob.c { right: 4%; top: 58%; width: clamp(100px, 12vw, 160px); }
+.nut { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 26px 22px rgba(44, 58, 34, 0.28)); }
+@media (max-width: 700px) {
+  .pp-orb-wrap { width: 118vw; right: -42vw; top: -6vw; }
+  .pista-stage { width: 70vw; }
+  .nut-bob.a { right: 6%; top: 10%; width: 44vw; }
+  .nut-bob.b { right: 52%; top: 40%; width: 26vw; }
+  .nut-bob.c { right: 2%; top: 46%; width: 24vw; }
+}
+@media (prefers-reduced-motion: reduce) { .pp-ring, .pp-video video { animation: none; } }
