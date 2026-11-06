@@ -10,7 +10,7 @@ export default function Footer() {
           Fuel your <em>better.</em>
         </motion.h2>
         <Magnetic>
-          <Link to="/products" className="btn btn-cream btn-lg" data-cursor="Shop">
+          <Link to="/products" className="btn btn-cream btn-lg">
             Shop the jar <span className="arrow" aria-hidden="true">↗</span>
           </Link>
         </Magnetic>

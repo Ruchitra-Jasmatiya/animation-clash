@@ -1,9 +1,9 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { discountPercent, formatPrice, imgSrc } from '../lib/api'
 
 /** Product tile: masked image reveal, 3D tilt on hover, shared-element handoff to the quick view. */
-export default function ProductCard({ product, index = 0, onOpen }) {
+export default function ProductCard({ product, index = 0, onOpen, fresh = false }) {
   const ref = useRef(null)
   const mx = useMotionValue(0)
   const my = useMotionValue(0)
@@ -15,6 +15,8 @@ export default function ProductCard({ product, index = 0, onOpen }) {
   const imgY = useTransform(sy, [-0.5, 0.5], ['-3%', '3%'])
 
   const off = discountPercent(product)
+  const [now] = useState(() => Date.now())
+  const isNew = product.created_at && now - new Date(product.created_at).getTime() < 5 * 24 * 3600 * 1000
   const move = (e) => {
     if (e.pointerType !== 'mouse') return
     const r = ref.current.getBoundingClientRect()
@@ -26,9 +28,9 @@ export default function ProductCard({ product, index = 0, onOpen }) {
   return (
     <motion.article
       layout
-      className={`card${product.in_stock === false ? ' is-sold' : ''}`}
-      initial={{ opacity: 0, y: 70 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      className={`card${product.in_stock === false ? ' is-sold' : ''}${fresh ? ' is-fresh' : ''}`}
+      initial={{ opacity: 0, y: 90, rotate: index % 2 ? 1.6 : -1.6 }}
+      whileInView={{ opacity: 1, y: 0, rotate: 0 }}
       exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.28 } }}
       viewport={{ once: true, margin: '0px 0px -8% 0px' }}
       transition={{ duration: 0.9, delay: (index % 3) * 0.09, ease: [0.16, 1, 0.3, 1] }}
@@ -37,7 +39,7 @@ export default function ProductCard({ product, index = 0, onOpen }) {
         ref={ref}
         type="button"
         className="card-media"
-        data-cursor="View"
+       
         onPointerMove={move}
         onPointerLeave={leave}
         onClick={() => onOpen?.(product)}
@@ -47,6 +49,9 @@ export default function ProductCard({ product, index = 0, onOpen }) {
         <motion.div className="card-img" layoutId={`img-${product.id}`} style={{ x: imgX, y: imgY }}>
           <img src={imgSrc(product)} alt={product.name} loading="lazy" decoding="async" onError={(e) => { e.currentTarget.src = '/images/massup-01-jar-hero.jpg' }} />
         </motion.div>
+        <span className="card-shine" aria-hidden="true" />
+        <span className="card-view" aria-hidden="true">Quick view <i>↗</i></span>
+        {isNew && product.in_stock !== false && <span className="badge badge-new">New</span>}
         {product.in_stock === false && <span className="badge badge-sold">Sold out</span>}
         {off > 0 && product.in_stock !== false && <span className="badge badge-off">{off}% off</span>}
         {product.size && <span className="badge">{product.size}</span>}

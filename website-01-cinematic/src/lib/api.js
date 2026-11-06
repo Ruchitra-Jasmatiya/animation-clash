@@ -38,6 +38,7 @@ async function request(path, { method = 'GET', body, auth = false, signal } = {}
     method,
     headers,
     signal,
+    cache: 'no-store',
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
   })
   if (auth && res.status === 401) window.dispatchEvent(new Event('massup:auth-lost'))

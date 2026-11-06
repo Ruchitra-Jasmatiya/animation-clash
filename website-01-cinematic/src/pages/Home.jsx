@@ -8,6 +8,7 @@ import Split from '../components/Split'
 import Magnetic from '../components/Magnetic'
 import ProductCard from '../components/ProductCard'
 import Footer from '../components/Footer'
+import CtaReveal from '../components/CtaReveal'
 import { useApp } from '../lib/app-context'
 import { useProducts } from '../lib/useProducts'
 import { useSiteMedia } from '../lib/useSiteMedia'
@@ -70,6 +71,13 @@ export default function Home() {
           gsap.to(el, { yPercent: -60 - i * 40, rotate: i % 2 ? 12 : -12, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
         )
 
+        // ---------- hero: the big wordmark scatters as you leave ----------
+        q('.hero-letter-mask').forEach((el, i) =>
+          gsap.to(el, { yPercent: (i % 2 ? 1 : -1) * (14 + i * 4), rotate: (i % 2 ? 1 : -1) * (4 + i), ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
+        )
+        gsap.to('.hero-copy.left', { xPercent: -14, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.hero', start: '30% top', end: 'bottom top', scrub: true } })
+        gsap.to('.hero-copy.right', { xPercent: 14, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.hero', start: '30% top', end: 'bottom top', scrub: true } })
+
         // ---------- scroll-velocity marquees ----------
         q('.marquee').forEach((m, i) => {
           const track = m.querySelector('.marquee-track')
@@ -83,6 +91,8 @@ export default function Home() {
               const v = self.getVelocity() / 180
               gsap.to(tween, { timeScale: 1 + Math.abs(v) * (self.direction === 1 ? 1 : -1) * 1, duration: 0.25, overwrite: true })
               gsap.to(tween, { timeScale: 1, duration: 1.2, delay: 0.25, overwrite: 'auto' })
+              gsap.to(track, { skewX: gsap.utils.clamp(-9, 9, -self.getVelocity() / 260), duration: 0.3, overwrite: 'auto' })
+              gsap.to(track, { skewX: 0, duration: 0.9, delay: 0.3, ease: 'power3.out', overwrite: 'auto' })
             },
           })
         })
@@ -90,8 +100,14 @@ export default function Home() {
         // ---------- statement: words light up with scroll ----------
         gsap.fromTo(q('.stmt-word'), { opacity: 0.14 }, { opacity: 1, stagger: 0.12, ease: 'none', scrollTrigger: { trigger: '.statement', start: 'top 72%', end: 'bottom 55%', scrub: true } })
         q('.stmt-img').forEach((el, i) =>
-          gsap.fromTo(el, { yPercent: 18 + i * 12 }, { yPercent: -18 - i * 12, ease: 'none', scrollTrigger: { trigger: '.statement', start: 'top bottom', end: 'bottom top', scrub: true } })
+          gsap.fromTo(el, { yPercent: 18 + i * 12, rotate: i % 2 ? 10 : -10, scale: 0.85 }, { yPercent: -18 - i * 12, rotate: i % 2 ? -8 : 8, scale: 1.08, ease: 'none', scrollTrigger: { trigger: '.statement', start: 'top bottom', end: 'bottom top', scrub: true } })
         )
+
+        // ---------- big word with the photo living inside the letters ----------
+        q('.mw-line').forEach((el, i) => {
+          gsap.fromTo(el, { backgroundPositionY: '0%', xPercent: i ? 4 : -12 }, { backgroundPositionY: '100%', xPercent: i ? -3 : 8, ease: 'none', scrollTrigger: { trigger: '.maskword', start: 'top bottom', end: 'bottom top', scrub: true } })
+        })
+        gsap.fromTo('.mw-note', { y: 50, opacity: 0 }, { y: 0, opacity: 1, ease: 'power3.out', scrollTrigger: { trigger: '.mw-note', start: 'top 92%', end: 'top 70%', scrub: true } })
 
         // ---------- showcase: video frame grows, background turns forest ----------
         const show = gsap.timeline({ scrollTrigger: { trigger: '.showcase', start: 'top top', end: '+=170%', pin: true, scrub: 1, anticipatePin: 1 } })
@@ -105,6 +121,9 @@ export default function Home() {
         // ---------- gallery columns drift at different speeds ----------
         q('.gal-col').forEach((col, i) =>
           gsap.fromTo(col, { yPercent: i === 1 ? 10 : -6 }, { yPercent: i === 1 ? -16 : 12, ease: 'none', scrollTrigger: { trigger: '.gallery', start: 'top bottom', end: 'bottom top', scrub: 0.6 } })
+        )
+        q('.gal-item').forEach((fig) =>
+          gsap.fromTo(fig, { clipPath: 'inset(16% 10% 16% 10% round 44px)' }, { clipPath: 'inset(0% 0% 0% 0% round 22px)', ease: 'none', scrollTrigger: { trigger: fig, start: 'top 94%', end: 'top 52%', scrub: true } })
         )
         q('.gal-item img').forEach((im) =>
           gsap.fromTo(im, { scale: 1.25 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: im.parentElement, start: 'top bottom', end: 'bottom 40%', scrub: true } })
@@ -129,6 +148,9 @@ export default function Home() {
             onUpdate: (s) => gsap.set('.story-bar i', { scaleX: s.progress }),
           },
         })
+        q('.story-card').forEach((card) =>
+          gsap.fromTo(card, { opacity: 0.3, scale: 0.9 }, { opacity: 1, scale: 1, ease: 'none', scrollTrigger: { trigger: card, containerAnimation: tween, start: 'left 96%', end: 'left 58%', scrub: true } })
+        )
         q('.story-img img').forEach((im) =>
           gsap.fromTo(im, { xPercent: -9 }, { xPercent: 9, ease: 'none', scrollTrigger: { trigger: im.closest('.story-card'), containerAnimation: tween, start: 'left right', end: 'right left', scrub: true } })
         )
@@ -139,6 +161,32 @@ export default function Home() {
         q('.story-card').forEach((c) =>
           gsap.from(c, { y: 70, opacity: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: c, start: 'top 88%' } })
         )
+      })
+
+      // ---------- featured cards rise at different speeds ----------
+      mm.add('(min-width: 700px) and (prefers-reduced-motion: no-preference)', () => {
+        q('.feat-slot').forEach((el, i) =>
+          gsap.fromTo(el, { y: [90, 30, 130][i % 3] }, { y: [-20, -70, -40][i % 3], ease: 'none', scrollTrigger: { trigger: '.featured', start: 'top bottom', end: 'bottom top', scrub: 0.6 } })
+        )
+      })
+
+      // ---------- hero follows the mouse a little (mouse devices only) ----------
+      mm.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
+        const hero = root.current.querySelector('.hero')
+        const arch = [gsap.quickTo('.hero-arch', 'x', { duration: 0.9, ease: 'power3' }), gsap.quickTo('.hero-arch', 'y', { duration: 0.9, ease: 'power3' })]
+        const f1 = [gsap.quickTo('.hero-float.f1', 'x', { duration: 1.1, ease: 'power3' }), gsap.quickTo('.hero-float.f1', 'y', { duration: 1.1, ease: 'power3' })]
+        const f2 = [gsap.quickTo('.hero-float.f2', 'x', { duration: 1.3, ease: 'power3' }), gsap.quickTo('.hero-float.f2', 'y', { duration: 1.3, ease: 'power3' })]
+        const word = gsap.quickTo('.hero-word', 'x', { duration: 1.4, ease: 'power3' })
+        const move = (e) => {
+          const nx = e.clientX / window.innerWidth - 0.5
+          const ny = e.clientY / window.innerHeight - 0.5
+          arch[0](nx * -26); arch[1](ny * -18)
+          f1[0](nx * 60); f1[1](ny * 46)
+          f2[0](nx * -48); f2[1](ny * -38)
+          word(nx * 30)
+        }
+        hero.addEventListener('pointermove', move)
+        return () => hero.removeEventListener('pointermove', move)
       })
 
       // ---------- spotlight: swap the sticky jar image ----------
@@ -185,7 +233,7 @@ export default function Home() {
         <motion.div className="hero-copy right" initial={{ opacity: 0, y: 30 }} animate={ready ? { opacity: 1, y: 0 } : {}} transition={{ delay: 1.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}>
           <p>Premium pistachio protein powder, crafted for everyday performance and a cleaner way to fuel your day.</p>
           <Magnetic>
-            <Link to="/products" className="btn btn-dark btn-lg" data-cursor="Shop">
+            <Link to="/products" className="btn btn-dark btn-lg">
               Shop now <span className="arrow" aria-hidden="true">↗</span>
             </Link>
           </Magnetic>
@@ -226,6 +274,14 @@ export default function Home() {
           <span className="eyebrow">What is MASSUP</span>
           {STATEMENT.split(' ').map((w, i) => <span className="stmt-word" key={i}>{w} </span>)}
         </p>
+      </section>
+
+      {/* ================= BIG WORD (photo inside the letters) ================= */}
+      <section className="maskword" aria-label="Real pistachio">
+        <div className="mw-line" style={{ backgroundImage: `url(${media.url('story_2')})` }} aria-hidden="true">REAL</div>
+        <div className="mw-line" style={{ backgroundImage: `url(${media.url('story_1')})` }} aria-hidden="true">PISTACHIO</div>
+        <h2 className="sr-only">Real pistachio</h2>
+        <p className="mw-note">Roasted, milled and blended — with nothing hiding behind the flavour.</p>
       </section>
 
       {/* ================= STORY (pinned horizontal) ================= */}
@@ -314,7 +370,7 @@ export default function Home() {
           {GALLERY.map((col, ci) => (
             <div className="gal-col" key={ci}>
               {col.map((_, j) => (
-                <figure className="gal-item" key={j} data-cursor="MASSUP">
+                <figure className="gal-item" key={j}>
                   <img src={media.url(`gallery_${ci * 3 + j + 1}`)} alt="MASSUP pistachio protein" loading="lazy" />
                 </figure>
               ))}
@@ -331,15 +387,19 @@ export default function Home() {
             <Split as="h2" text="Fuel every *goal*" className="h2" />
           </div>
           <Magnetic>
-            <Link to="/products" className="btn btn-line" data-cursor="All">All products <span className="arrow" aria-hidden="true">↗</span></Link>
+            <Link to="/products" className="btn btn-line">All products <span className="arrow" aria-hidden="true">↗</span></Link>
           </Magnetic>
         </div>
         <div className="grid grid-3">
           {featured.map((p, i) => (
-            <ProductCard key={p.id} product={p} index={i} onOpen={() => navigate('/products')} />
+            <div className="feat-slot" key={p.id}>
+              <ProductCard product={p} index={i} onOpen={() => navigate('/products')} />
+            </div>
           ))}
         </div>
       </section>
+
+      <CtaReveal eyebrow="Ready when you are" title="Taste the *green.*" text="One scoop, ten seconds, a creamier way to fuel the day." image={media.url('spot_2')} />
 
       <Footer />
     </main>

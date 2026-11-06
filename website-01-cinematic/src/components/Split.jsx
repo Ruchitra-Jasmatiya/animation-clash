@@ -4,8 +4,8 @@ import { useApp } from '../lib/app-context'
 
 const container = (stagger, delay) => ({ hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren: delay } } })
 const word = {
-  hidden: { y: '115%', rotate: 5 },
-  show: { y: '0%', rotate: 0, transition: { duration: 1.05, ease: [0.16, 1, 0.3, 1] } },
+  hidden: { y: '118%', rotate: 7, skewY: 6 },
+  show: { y: '0%', rotate: 0, skewY: 0, transition: { duration: 1.1, ease: [0.16, 1, 0.3, 1] } },
 }
 
 /**

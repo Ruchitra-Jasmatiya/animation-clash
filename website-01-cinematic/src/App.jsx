@@ -5,7 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SmoothScroll, useLenis } from './lib/smooth'
 import { AppContext } from './lib/app-context'
 import Navbar from './components/Navbar'
-import Cursor from './components/Cursor'
+import ScrollProgress from './components/ScrollProgress'
 import Preloader from './components/Preloader'
 import Home from './pages/Home'
 import Products from './pages/Products'
@@ -54,7 +54,7 @@ function Shell() {
   return (
     <AppContext.Provider value={ctx}>
       <ScrollReset />
-      {!isAdmin && <Cursor />}
+      {!isAdmin && <ScrollProgress />}
       {!isAdmin && <Navbar />}
       <AnimatedRoutes />
       <AnimatePresence>{!ready && <Preloader key="pre" onDone={() => setReady(true)} />}</AnimatePresence>

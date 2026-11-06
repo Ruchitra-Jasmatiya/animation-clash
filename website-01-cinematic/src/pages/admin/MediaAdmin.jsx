@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { adm, mediaSrc } from '../../lib/api'
 import { DEFAULT_MEDIA } from '../../lib/defaults'
 import { Confirm, ErrorBox, Field, Icon, Modal, PageHead, Spinner, useAsync, useToast } from './ui'
+import { clearMediaCache } from '../../lib/useSiteMedia'
 
 const GROUP_HELP = {
   Home: 'Images and videos on the home page. Add Extra videos to create a new “In motion” section.',
@@ -16,7 +17,7 @@ export default function MediaAdmin() {
   const [edit, setEdit] = useState(null)
   const [reset, setReset] = useState(null)
 
-  const replace = (n) => { setData((l) => l.map((x) => (x.slot === n.slot ? n : x))); setEdit(null); sessionStorage.removeItem('massup.media.v1'); toast('Updated — it is live on the website.') }
+  const replace = (n) => { setData((l) => l.map((x) => (x.slot === n.slot ? n : x))); setEdit(null); clearMediaCache(); toast('Updated — it is live on the website.') }
   const doReset = async () => {
     try { const n = await adm.del(`/site-media/${reset.slot}/`); setData((l) => l.map((x) => (x.slot === n.slot ? n : x))); sessionStorage.removeItem('massup.media.v1'); setReset(null); toast('Reset to the original.') } catch (e) { toast(e.message, 'err') }
   }
@@ -88,7 +89,7 @@ function MediaEditor({ item, onClose, onSaved }) {
     try {
       let body
       if (mode === 'upload') { body = new FormData(); body.append('file', file) } else body = { url: url.trim() }
-      onSaved(await adm.put(`/site-media/${item.slot}/`, body))
+      { const saved = await adm.put(`/site-media/${item.slot}/`, body); clearMediaCache(); onSaved(saved) }
     } catch (e2) { setErr(e2.message) } finally { setBusy(false) }
   }
   const shown = mode === 'upload' ? preview : url
