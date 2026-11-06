@@ -14,6 +14,7 @@ SLOTS = (
     + [(f"spot_{i}", f"Jar spotlight image {i}", "image", "Home") for i in range(1, 5)]
     + [(f"gallery_{i}", f"Gallery image {i}", "image", "Home") for i in range(1, 10)]
     # ---- Shop ----
+    + [("shop_hero_video", "Shop top video (plays inside the big green half-circle)", "video", "Shop")]
     + [("shop_banner_video", "Shop banner video (adds a banner on the Products page)", "video", "Shop")]
     + [(f"ribbon_{i}", f"'Inside the jar' strip image {i}", "image", "Shop") for i in range(1, 8)]
 )
