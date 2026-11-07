@@ -8,9 +8,10 @@ import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
 import Footer from '../components/Footer'
 import CtaReveal from '../components/CtaReveal'
-import PistaCrack from '../components/Pistacrack'
+import PistaCrack from '../components/PistaCrack'
 import { useProducts } from '../lib/useProducts'
 import { useSiteMedia } from '../lib/useSiteMedia'
+import { useToast } from '../lib/toast'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -57,8 +58,8 @@ export default function Products() {
   const [flavour, setFlavour] = useState('all')
   const [fresh, setFresh] = useState(() => new Set())
   const seen = useRef(null)
+  const toast = useToast()
   const [open, setOpen] = useState(null)
-  const [toast, setToast] = useState('')
 
   const heroVideo = media.custom('shop_hero_video') ? media.url('shop_hero_video') : ''
   const showVideo = !!heroVideo && failedVideo !== heroVideo
@@ -90,17 +91,11 @@ export default function Products() {
       const added = products.filter((p) => !seen.current.has(p.id))
       if (added.length) {
         setFresh(new Set(added.map((p) => p.id)))
-        setToast(added.length === 1 ? `Just landed: ${added[0].name}` : `${added.length} new jars just landed`)
+        toast(added.length === 1 ? `Just landed: ${added[0].name}` : `${added.length} new jars just landed`)
       }
     }
     seen.current = ids
-  }, [products, status])
-
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(''), 2600)
-    return () => clearTimeout(t)
-  }, [toast])
+  }, [products, status, toast])
 
   useGSAP(
     () => {
@@ -258,16 +253,7 @@ export default function Products() {
 
       <Footer />
 
-      <ProductModal
-        product={open}
-        onClose={() => setOpen(null)}
-        onAdd={(p) => { setOpen(null); setToast(`${p.name} — ordering opens soon. This demo has no checkout yet.`) }}
-      />
-      <AnimatePresence>
-        {toast && (
-          <motion.div className="toast" role="status" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }}>{toast}</motion.div>
-        )}
-      </AnimatePresence>
+      <ProductModal product={open} onClose={() => setOpen(null)} />
     </main>
   )
 }

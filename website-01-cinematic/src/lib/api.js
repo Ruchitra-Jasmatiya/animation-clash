@@ -30,9 +30,21 @@ export const discountPercent = (p) => {
   return mrp > price && price >= 0 ? Math.round(((mrp - price) / mrp) * 100) : 0
 }
 
-async function request(path, { method = 'GET', body, auth = false, signal } = {}) {
+const CUSTOMER_KEY = 'massup.customer'
+export const getCustomerToken = () => {
+  try { return localStorage.getItem(CUSTOMER_KEY) || '' } catch { return '' }
+}
+export const setCustomerToken = (t) => {
+  try { t ? localStorage.setItem(CUSTOMER_KEY, t) : localStorage.removeItem(CUSTOMER_KEY) } catch { /* private mode */ }
+}
+const onAdminPage = () => typeof window !== 'undefined' && window.location.pathname.startsWith('/manage')
+
+/** auth: true = store manager (Token), 'customer' = shopper (Customer), 'auto' = whichever applies to this page. */
+export async function request(path, { method = 'GET', body, auth = false, signal } = {}) {
   const headers = { Accept: 'application/json' }
-  if (auth) headers.Authorization = `Token ${getToken()}`
+  if (auth === 'auto') auth = onAdminPage() ? true : 'customer'
+  if (auth === 'customer') headers.Authorization = `Customer ${getCustomerToken()}`
+  else if (auth) headers.Authorization = `Token ${getToken()}`
   if (body && !(body instanceof FormData)) headers['Content-Type'] = 'application/json'
   const res = await fetch(`${API}/api${path}`, {
     method,
@@ -41,7 +53,8 @@ async function request(path, { method = 'GET', body, auth = false, signal } = {}
     cache: 'no-store',
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
   })
-  if (auth && res.status === 401) window.dispatchEvent(new Event('massup:auth-lost'))
+  if (auth === 'customer' && res.status === 401) window.dispatchEvent(new Event('massup:customer-lost'))
+  else if (auth && res.status === 401) window.dispatchEvent(new Event('massup:auth-lost'))
   if (res.status === 204) return null
   let data = null
   try { data = await res.json() } catch { /* not json */ }
@@ -65,7 +78,7 @@ function extractError(data) {
 }
 
 export const api = {
-  list: (signal) => request('/products/', { signal }),
+  list: (signal) => request('/products/', { signal, auth: 'auto' }),
   create: (fd) => request('/products/', { method: 'POST', body: fd, auth: true }),
   update: (id, fd) => request(`/products/${id}/`, { method: 'PATCH', body: fd, auth: true }),
   remove: (id) => request(`/products/${id}/`, { method: 'DELETE', auth: true }),

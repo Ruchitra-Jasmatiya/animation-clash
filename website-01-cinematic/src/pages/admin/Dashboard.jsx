@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { adm } from '../../lib/api'
-import { CountUp, Empty, ErrorBox, Icon, PageHead, Spinner, StatusBadge, fmtDate, inr, inr0, useAsync } from './ui'
+import { CountUp, Empty, ErrorBox, Icon, PageHead, Spinner, PayBadge, fmtDate, inr, inr0, useAsync } from './ui'
 
 export default function Dashboard() {
   const { data, loading, error, reload } = useAsync(() => adm.get('/dashboard/'), [])
@@ -14,19 +14,29 @@ export default function Dashboard() {
   const day = hover != null ? data.daily[hover] : null
 
   const stats = [
-    { label: 'Revenue', value: data.revenue, fmt: (n) => inr0(n), icon: 'receipt' },
-    { label: 'Invoices', value: data.orders, icon: 'dashboard' },
+    { label: 'Revenue (paid)', value: data.revenue, fmt: (n) => inr0(n), icon: 'receipt' },
+    { label: 'Orders', value: data.orders, icon: 'dashboard' },
+    { label: 'Website orders', value: data.online_orders, icon: 'card' },
     { label: 'Pending', value: data.pending, icon: 'refresh' },
+    { label: 'Customers', value: data.customers, icon: 'users' },
+    { label: 'New today', value: data.customers_today, icon: 'user' },
+    { label: 'Visitors today', value: data.visitors_today, icon: 'chart' },
     { label: 'Products', value: data.products, icon: 'box' },
   ]
 
   return (
     <>
       <PageHead title="Dashboard" sub="How the shop is doing.">
-        <Link to="/manage/billing/new" className="ad-btn primary"><Icon name="plus" size={18} /> New invoice</Link>
+        <Link to="/manage/billing/new" className="ad-btn primary"><Icon name="plus" size={18} /> New counter bill</Link>
       </PageHead>
 
-      <div className="ad-stats">
+      {data.to_verify > 0 && (
+        <div className="ad-card ad-alert"><span><b>{data.to_verify} payment{data.to_verify === 1 ? '' : 's'} waiting for you.</b> Customers say they paid — check your UPI app and confirm.</span><Link className="ad-btn primary sm" to="/manage/billing">Verify now</Link></div>
+      )}
+      {data.low_stock.length > 0 && (
+        <div className="ad-card ad-alert"><span><b>Low stock:</b> {data.low_stock.map((p) => `${p.name} (${p.stock})`).join(', ')}</span><Link className="ad-btn ghost sm" to="/manage/products">Update stock</Link></div>
+      )}
+      <div className="ad-stats four">
         {stats.map((s, i) => (
           <motion.div key={s.label} className="ad-card stat" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
             <span className="stat-ic"><Icon name={s.icon} /></span>
@@ -65,13 +75,13 @@ export default function Dashboard() {
       </div>
 
       <section className="ad-card">
-        <div className="ad-card-head"><h2>Recent invoices</h2><Link className="ad-link" to="/manage/billing">View all</Link></div>
+        <div className="ad-card-head"><h2>Recent orders</h2><Link className="ad-link" to="/manage/billing">View all</Link></div>
         {data.recent.length ? (
           <div className="ad-list">
             {data.recent.map((o) => (
               <Link key={o.id} to={`/manage/billing/${o.id}`} className="ad-list-row">
                 <div><b>{o.invoice_no}</b><small>{o.customer_name} · {fmtDate(o.created_at)}</small></div>
-                <StatusBadge status={o.status} />
+                <PayBadge order={o} />
                 <strong>{inr(o.total)}</strong>
               </Link>
             ))}
@@ -80,6 +90,8 @@ export default function Dashboard() {
       </section>
 
       <div className="ad-quick">
+        <Link to="/manage/festivals" className="ad-card quick"><Icon name="calendar" /><b>Festival offers</b><small>Diwali, Holi, Eid…</small></Link>
+        <Link to="/manage/analytics" className="ad-card quick"><Icon name="chart" /><b>Website analytics</b><small>Visitors and logins</small></Link>
         <Link to="/manage/products" className="ad-card quick"><Icon name="box" /><b>Add a product</b><small>Photos, price, discount</small></Link>
         <Link to="/manage/coupons" className="ad-card quick"><Icon name="tag" /><b>Make a coupon</b><small>{data.active_coupons} active now</small></Link>
         <Link to="/manage/media" className="ad-card quick"><Icon name="image" /><b>Change website media</b><small>Home & shop images, videos</small></Link>

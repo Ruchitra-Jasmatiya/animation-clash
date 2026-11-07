@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { discountPercent, formatPrice, imgSrc } from '../lib/api'
+import { AddButton, WishButton, stockInfo } from './CartButtons'
 
 /** Product tile: masked image reveal, 3D tilt on hover, shared-element handoff to the quick view. */
 export default function ProductCard({ product, index = 0, onOpen, fresh = false }) {
@@ -15,6 +16,7 @@ export default function ProductCard({ product, index = 0, onOpen, fresh = false 
   const imgY = useTransform(sy, [-0.5, 0.5], ['-3%', '3%'])
 
   const off = discountPercent(product)
+  const stock = stockInfo(product)
   const [now] = useState(() => Date.now())
   const isNew = product.created_at && now - new Date(product.created_at).getTime() < 5 * 24 * 3600 * 1000
   const move = (e) => {
@@ -57,12 +59,18 @@ export default function ProductCard({ product, index = 0, onOpen, fresh = false 
         {product.size && <span className="badge">{product.size}</span>}
       </motion.button>
 
+      <WishButton product={product} className="card-wish" />
+
       <div className="card-body">
         <div>
           <h3>{product.name}</h3>
           <p className="card-flavour">{product.flavour || 'Pistachio'}</p>
         </div>
         <span className="card-price">{off > 0 && <s>{formatPrice(product.mrp)}</s>}{formatPrice(product.price)}</span>
+      </div>
+      <div className="card-buy">
+        <span className={`stock-tag ${stock.tone}`}>{stock.text}</span>
+        <AddButton product={product} />
       </div>
     </motion.article>
   )

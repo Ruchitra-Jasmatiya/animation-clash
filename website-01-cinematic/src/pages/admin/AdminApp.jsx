@@ -13,12 +13,20 @@ import Coupons from './Coupons'
 import MediaAdmin from './MediaAdmin'
 import Security from './Security'
 import Settings from './Settings'
+import Customers from './Customers'
+import Festivals from './Festivals'
+import RewardsAdmin from './RewardsAdmin'
+import Analytics from './Analytics'
 import '../../admin.css'
 
 const NAV = [
   { to: '/manage', label: 'Dashboard', icon: 'dashboard', end: true },
   { to: '/manage/products', label: 'Products', icon: 'box' },
-  { to: '/manage/billing', label: 'Billing', icon: 'receipt' },
+  { to: '/manage/billing', label: 'Orders', icon: 'receipt' },
+  { to: '/manage/customers', label: 'Customers', icon: 'users' },
+  { to: '/manage/analytics', label: 'Analytics', icon: 'chart' },
+  { to: '/manage/festivals', label: 'Festivals', icon: 'calendar' },
+  { to: '/manage/scratch', label: 'Scratch cards', icon: 'gift' },
   { to: '/manage/coupons', label: 'Coupons', icon: 'tag' },
   { to: '/manage/media', label: 'Site media', icon: 'image' },
   { to: '/manage/security', label: 'Security log', icon: 'shield' },
@@ -90,6 +98,10 @@ function Shell({ user, onLogout }) {
               <Route path="billing" element={<Billing />} />
               <Route path="billing/new" element={<InvoiceBuilder />} />
               <Route path="billing/:id" element={<InvoiceView />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="festivals" element={<Festivals />} />
+              <Route path="scratch" element={<RewardsAdmin />} />
               <Route path="coupons" element={<Coupons />} />
               <Route path="media" element={<MediaAdmin />} />
               <Route path="security" element={<Security />} />
@@ -102,7 +114,7 @@ function Shell({ user, onLogout }) {
       <nav className="ad-bottom" aria-label="Manager (mobile)">
         {NAV.map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `ad-tab${isActive ? ' on' : ''}`}>
-            <Icon name={n.icon} size={21} /><span>{n.label.replace('Security log', 'Security').replace('Site media', 'Media')}</span>
+            <Icon name={n.icon} size={21} /><span>{n.label.replace('Security log', 'Security').replace('Site media', 'Media').replace('Scratch cards', 'Scratch')}</span>
           </NavLink>
         ))}
       </nav>

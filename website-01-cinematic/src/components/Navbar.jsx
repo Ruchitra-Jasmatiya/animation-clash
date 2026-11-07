@@ -3,10 +3,22 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLenis } from '../lib/smooth'
 import Magnetic from './Magnetic'
+import { logout, useShop } from '../lib/shop'
+
+const Ico = ({ d }) => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
+const ICON = {
+  heart: 'M12 20.5s-7.500-4.600-9.200-9.400C1.700 7.800 3.700 5 6.700 5c2 0 3.400 1.100 5.300 3.300C13.900 6.100 15.300 5 17.300 5c3 0 5 2.800 3.900 6.100-1.700 4.800-9.200 9.400-9.200 9.400Z',
+  bag: 'M5 8h14l-1 12H6L5 8Zm3 0a4 4 0 0 1 8 0',
+  gift: 'M4 11h16v9H4v-9Zm-1-4h18v4H3V7Zm9 0v13M12 7c-1-3-5-4-5-1.500S10 7 12 7Zm0 0c1-3 5-4 5-1.500S14 7 12 7Z',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 9a8 8 0 0 1 16 0',
+}
+const Count = ({ n }) => (n > 0 ? <i className="nav-count">{n > 99 ? '99+' : n}</i> : null)
 
 const links = [
   { to: '/', label: 'Home', end: true },
   { to: '/products', label: 'Products' },
+  { to: '/orders', label: 'Orders' },
+  { to: '/rewards', label: 'Rewards' },
 ]
 
 export default function Navbar() {
@@ -18,6 +30,8 @@ export default function Navbar() {
   const setOpen = (v) => setOpenPath((typeof v === 'function' ? v(open) : v) ? pathname : null)
   const navigate = useNavigate()
   const lenis = useLenis()
+  const { summary, customer } = useShop()
+  const [acct, setAcct] = useState(false)
 
   // hide on scroll down, show on scroll up
   useEffect(() => {
@@ -71,8 +85,23 @@ export default function Navbar() {
           </div>
 
           <div className="nav-right">
+            <Link to="/rewards" className="nav-ic nav-rewards" aria-label="Rewards"><Ico d={ICON.gift} /><span className="nav-ic-label">Rewards</span><Count n={summary.scratch_cards} /></Link>
+            <Link to="/wishlist" className="nav-ic" aria-label={`Wishlist, ${summary.wishlist} saved`}><Ico d={ICON.heart} /><Count n={summary.wishlist} /></Link>
+            <Link to="/cart" className="nav-ic" aria-label={`Bag, ${summary.cart} items`}><Ico d={ICON.bag} /><Count n={summary.cart} /></Link>
+            <div className="acct">
+              <button className="nav-ic avatar" aria-label="Account" aria-expanded={acct} onClick={() => setAcct((a) => !a)}>{(customer?.name || customer?.email || '?').trim()[0]?.toUpperCase()}</button>
+              {acct && (
+                <div className="acct-menu" onMouseLeave={() => setAcct(false)}>
+                  <p><b>{customer?.name}</b><small>{customer?.email}</small></p>
+                  <Link to="/orders" onClick={() => setAcct(false)}>My orders {summary.to_verify > 0 && <em>{summary.to_verify} verifying</em>}</Link>
+                  <Link to="/rewards" onClick={() => setAcct(false)}>Rewards</Link>
+                  <Link to="/wishlist" onClick={() => setAcct(false)}>Wishlist</Link>
+                  <button onClick={() => { setAcct(false); logout() }}>Log out</button>
+                </div>
+              )}
+            </div>
             <Magnetic strength={0.25}>
-              <Link to="/products" className="btn btn-dark btn-sm">
+              <Link to="/products" className="btn btn-dark btn-sm shop-btn">
                 Shop now <span className="arrow" aria-hidden="true">↗</span>
               </Link>
             </Magnetic>

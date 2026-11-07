@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { discountPercent, formatPrice, imgSrc } from '../lib/api'
 import { useLenis } from '../lib/smooth'
+import { AddButton, GoToBag, WishButton, stockInfo } from './CartButtons'
 
-export default function ProductModal({ product, onClose, onAdd }) {
+export default function ProductModal({ product, onClose }) {
   const lenis = useLenis()
 
   useEffect(() => {
@@ -29,9 +30,12 @@ export default function ProductModal({ product, onClose, onAdd }) {
               <motion.p className="modal-price" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38, duration: 0.7 }}>{discountPercent(product) > 0 && <s>{formatPrice(product.mrp)}</s>}{formatPrice(product.price)}{discountPercent(product) > 0 && <em className="off-tag">{discountPercent(product)}% off</em>}</motion.p>
               <motion.p className="modal-desc" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.44, duration: 0.7 }}>{product.description || 'Premium pistachio protein powder from MASSUP.'}</motion.p>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.7 }}>
-                <button className="btn btn-dark btn-lg" disabled={product.in_stock === false} onClick={() => onAdd(product)}>
-                  {product.in_stock === false ? 'Sold out' : 'Add to bag'} <span className="arrow" aria-hidden="true">↗</span>
-                </button>
+                <p className={`stock-tag ${stockInfo(product).tone}`}>{stockInfo(product).text}</p>
+                <div className="modal-actions">
+                  <AddButton product={product} size="lg" />
+                  <WishButton product={product} className="wish-lg" />
+                  <GoToBag />
+                </div>
               </motion.div>
             </div>
           </motion.div>

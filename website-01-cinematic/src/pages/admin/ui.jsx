@@ -47,6 +47,11 @@ const PATHS = {
   refresh: 'M20 11a8 8 0 1 0-2 6m2 4v-6h-6',
   user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 9a8 8 0 0 1 16 0',
   play: 'M8 5v14l11-7L8 5Z',
+  users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 10a7 7 0 0 1 14 0M16 3.500a4 4 0 0 1 0 7.500M18 14.500a7 7 0 0 1 4 6.500',
+  calendar: 'M4 6h16v14H4V6Zm0 5h16M8 3v4m8-4v4',
+  gift: 'M3 9h18v4H3V9Zm2 4h14v8H5v-8Zm7-4v12M12 9c-2 0-4-1-4-3a2 2 0 0 1 4 0 2 2 0 0 1 4 0c0 2-2 3-4 3Z',
+  chart: 'M4 20V10m6 10V4m6 16v-7m5 7H3',
+  card: 'M3 6h18v12H3V6Zm0 4h18M7 15h3',
 }
 export function Icon({ name, size = 20 }) {
   return (
@@ -157,6 +162,8 @@ export const ErrorBox = ({ message, onRetry }) => (
 )
 
 const STATUS_LABEL = { pending: 'Pending', paid: 'Paid', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled' }
+export const PAY_LABEL = { unpaid: 'Unpaid', submitted: 'To verify', paid: 'Paid', rejected: 'Not found' }
+export const PayBadge = ({ order }) => (order.status === 'cancelled' ? <span className="ad-badge s-cancelled">Cancelled</span> : <span className={`ad-badge p-${order.payment_status}`}>{PAY_LABEL[order.payment_status] || order.payment_status}</span>)
 export const StatusBadge = ({ status }) => <span className={`ad-badge s-${status}`}>{STATUS_LABEL[status] || status}</span>
 export const STATUSES = Object.keys(STATUS_LABEL)
 export const statusLabel = (s) => STATUS_LABEL[s] || s

@@ -4,7 +4,7 @@ import { adm, discountPercent, formatPrice, imgSrc } from '../../lib/api'
 import { clearProductCache } from '../../lib/useProducts'
 import { Confirm, Empty, ErrorBox, Field, Icon, Modal, PageHead, Spinner, useAsync, useToast } from './ui'
 
-const BLANK = { name: '', price: '', mrp: '', size: '', flavour: 'Pistachio', description: '', in_stock: true, image_url: '' }
+const BLANK = { name: '', price: '', mrp: '', size: '', flavour: 'Pistachio', description: '', in_stock: true, stock: '50', image_url: '' }
 
 export default function ProductsAdmin() {
   const toast = useToast()
@@ -53,6 +53,7 @@ export default function ProductsAdmin() {
                   <div className="prod-body">
                     <b title={p.name}>{p.name}</b>
                     <small>{p.flavour || '—'} · {p.size || 'no size'}</small>
+                    <small className={Number(p.stock) <= 5 ? 'ad-lowstock' : ''}>{Number(p.stock)} unit{Number(p.stock) === 1 ? '' : 's'} in stock</small>
                     <div className="prod-price">{off > 0 && <s>{formatPrice(p.mrp)}</s>}<strong>{formatPrice(p.price)}</strong></div>
                   </div>
                   <div className="prod-foot">
@@ -79,7 +80,7 @@ export default function ProductsAdmin() {
 
 function ProductEditor({ product, onClose, onSaved }) {
   const isNew = !product
-  const [f, setF] = useState(() => (product ? { name: product.name, price: product.price, mrp: product.mrp || '', size: product.size || '', flavour: product.flavour || '', description: product.description || '', in_stock: product.in_stock !== false, image_url: product.image_url || '' } : BLANK))
+  const [f, setF] = useState(() => (product ? { name: product.name, price: product.price, mrp: product.mrp || '', size: product.size || '', flavour: product.flavour || '', description: product.description || '', in_stock: product.in_stock !== false, stock: String(product.stock ?? 50), image_url: product.image_url || '' } : BLANK))
   const [mode, setMode] = useState(product && !product.image_url && product.image_display ? 'upload' : 'url')
   const [file, setFile] = useState(null)
   const [err, setErr] = useState('')
@@ -106,6 +107,7 @@ function ProductEditor({ product, onClose, onSaved }) {
     fd.append('name', f.name.trim()); fd.append('price', f.price); fd.append('mrp', f.mrp === '' ? '' : f.mrp)
     fd.append('size', f.size.trim()); fd.append('flavour', f.flavour.trim()); fd.append('description', f.description.trim())
     fd.append('in_stock', f.in_stock ? 'true' : 'false')
+    fd.append('stock', String(Math.max(0, parseInt(f.stock, 10) || 0)))
     if (mode === 'upload' && file) fd.append('image', file)
     else if (mode === 'url' && f.image_url.trim() && f.image_url.trim() !== product?.image_url) fd.append('image_url', f.image_url.trim())
     try {
@@ -129,7 +131,8 @@ function ProductEditor({ product, onClose, onSaved }) {
               <Field label="Flavour"><input value={f.flavour} onChange={set('flavour')} maxLength={80} /></Field>
             </div>
             <Field label="Description"><textarea rows={4} value={f.description} onChange={set('description')} /></Field>
-            <label className="ad-check"><input type="checkbox" checked={f.in_stock} onChange={set('in_stock')} /> In stock</label>
+            <Field label="Units in stock" hint="Goes down by itself when customers pay; 0 = sold out"><input type="number" min="0" step="1" value={f.stock} onChange={set('stock')} /></Field>
+            <label className="ad-check"><input type="checkbox" checked={f.in_stock} onChange={set('in_stock')} /> Show as available</label>
           </div>
           <div className="ad-stack">
             <div className="ad-tabs" role="tablist">

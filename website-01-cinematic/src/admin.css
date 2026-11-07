@@ -4,7 +4,7 @@
 .ad-root { --card: #fffdf7; --soft: #f1efdc; --bd: rgba(44, 58, 34, 0.12); --bd2: rgba(44, 58, 34, 0.2);
   position: fixed; inset: 0; z-index: 7000; background: var(--cream); color: var(--forest); overflow: hidden; font-size: 15px; }
 .ad-root *, .ad-root *::before, .ad-root *::after { box-sizing: border-box; }
-.ad-root h1, .ad-root h2, .ad-root h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01em; margin: 0; }
+.ad-root h1, .ad-root h2, .ad-root h3 { font-family: var(--sans); font-weight: 700; letter-spacing: -0.02em; margin: 0; }
 .ad-root button, .ad-root input, .ad-root select, .ad-root textarea { font: inherit; color: inherit; }
 .ad-root button { cursor: pointer; }
 .ad-root small { color: var(--muted); font-size: 0.8rem; display: block; }
@@ -114,7 +114,7 @@
 .bill-to { padding: 24px 0; } .bill-to small { text-transform: uppercase; letter-spacing: .14em; font-size: .68rem; font-weight: 800; } .bill-to b { display: block; font-size: 1.1rem; margin: 4px 0; } .bill-to p { margin: 2px 0; color: #566048; } .pre { white-space: pre-line; }
 .invoice table { width: 100%; border-collapse: collapse; } .invoice th { text-align: left; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; background: var(--pista-soft); padding: 11px 14px; } .invoice td { padding: 13px 14px; border-bottom: 1px solid #e8ebdb; } .invoice .r { text-align: right; font-variant-numeric: tabular-nums; }
 .inv-totals { margin: 22px 0 0 auto; width: min(100%, 340px); display: grid; gap: 9px; } .inv-totals div { display: flex; justify-content: space-between; gap: 14px; } .inv-totals dt { color: #566048; } .inv-totals dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; } .inv-totals .grand { border-top: 2px solid var(--forest); padding-top: 12px; margin-top: 4px; font-size: 1.2rem; } .inv-totals .grand dt { color: var(--forest); font-weight: 800; }
-.invoice footer { margin-top: 36px; padding-top: 20px; border-top: 1px solid #e8ebdb; font-size: .88rem; } .invoice footer p { margin: 4px 0; } .invoice .thanks { margin-top: 16px; text-align: center; color: var(--olive); font-family: var(--serif); font-style: italic; font-size: 1.05rem; }
+.invoice footer { margin-top: 36px; padding-top: 20px; border-top: 1px solid #e8ebdb; font-size: .88rem; } .invoice footer p { margin: 4px 0; } .invoice .thanks { margin-top: 16px; text-align: center; color: var(--olive); font-family: var(--serif); font-style: normal; font-size: 1.05rem; }
 
 /* ---------- coupons ---------- */
 .ad-coupons { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; } .coupon { padding: 20px; display: grid; gap: 8px; align-content: start; } .coupon.off { opacity: .78; }
@@ -154,3 +154,25 @@
   .invoice { box-shadow: none; border: 0; max-width: none; padding: 0; border-radius: 0; }
   @page { margin: 14mm; }
 }
+
+/* ---------- v3 additions ---------- */
+.ad-sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; } .ad-sheet-head h2 { font-size: 1.4rem; }
+.ad-sheet h3 { font-size: 1rem; margin-top: 6px; }
+.ad-kv { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; } .ad-kv > div { background: #fff; border: 1px solid var(--bd); border-radius: 14px; padding: 12px 14px; } .ad-kv b { display: block; overflow-wrap: anywhere; font-size: .92rem; margin-top: 2px; }
+.ad-mini { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.ad-btn.sm { padding: 7px 12px; font-size: .78rem; border-radius: 10px; }
+.p-paid { background: #d9ecc4; color: #2f5a17; } .p-submitted { background: #fde7b0; color: #7a5a06; } .p-unpaid { background: #ece9d8; color: #5b6350; } .p-rejected { background: #f4d9d2; color: #8a2f20; }
+.ad-paybox { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 20px; padding: 20px 24px; border-color: rgba(122,90,6,.3); background: #fff9e6; } .ad-paybox h2 { font-size: 1.1rem; } .ad-paybox p { margin: 6px 0 0; max-width: 560px; }
+.ad-live { margin-bottom: 18px; padding: 14px 20px; background: #eaf6dc; }
+.ad-fest { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+.fest { display: grid; grid-template-columns: 64px 1fr auto; gap: 16px; padding: 18px; align-items: start; } .fest.s-past { opacity: .55; } .fest.s-live { border-color: #7fae45; box-shadow: 0 0 0 3px rgba(127,174,69,.2); }
+.fest-date { background: var(--forest); color: var(--cream); border-radius: 16px; text-align: center; padding: 10px 0; display: grid; } .fest-date b { font-size: 1.5rem; line-height: 1; } .fest-date span { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--pista); }
+.fest-body { display: grid; gap: 4px; min-width: 0; } .fest-body h3 { font-size: 1.05rem; } .fest-body .ad-row { margin-top: 6px; gap: 6px; } .fest-act { display: grid; gap: 4px; justify-items: end; }
+.fs-live { background: #d9ecc4; color: #2f5a17; } .fs-scheduled { background: #d5e6ee; color: #1f5470; } .fs-past { background: #ece9d8; color: #667058; }
+tr.dim { opacity: .5; }
+.ad-stats.four { grid-template-columns: repeat(4, 1fr); } .ad-stats.six { grid-template-columns: repeat(3, 1fr); }
+.ad-alert { margin-bottom: 18px; padding: 14px 20px; background: #fff9e6; border-color: rgba(122,90,6,.3); display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ad-formblock { border-top: 1px solid var(--bd); padding-top: 14px; }
+@media (max-width: 860px) { .ad-kv { grid-template-columns: 1fr 1fr; } .ad-stats.four, .ad-stats.six { grid-template-columns: 1fr 1fr; } .fest { grid-template-columns: 56px 1fr; } .fest-act { grid-column: 1 / -1; display: flex; justify-content: flex-start; align-items: center; } }
+@media print { .ad-paybox { display: none !important; } }
+.ad-lowstock { color: #a4402f !important; font-weight: 700; }

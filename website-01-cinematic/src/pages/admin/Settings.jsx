@@ -45,6 +45,32 @@ export default function Settings({ user }) {
             <Field label="Shipping fee (₹)"><input type="number" min="0" step="0.01" value={f.shipping_fee} onChange={set('shipping_fee')} /></Field>
             <Field label="Free shipping above (₹)" hint="0 = never free"><input type="number" min="0" step="0.01" value={f.free_shipping_above} onChange={set('free_shipping_above')} /></Field>
           </div>
+          <label className="ad-check"><input type="checkbox" checked={f.show_cgst_sgst} onChange={set('show_cgst_sgst')} /> Show GST as CGST + SGST on invoices</label>
+          <Field label="HSN code" hint="Printed next to items"><input value={f.hsn_code} onChange={set('hsn_code')} maxLength={12} /></Field>
+
+          <h2 className="ad-formblock">UPI payments</h2>
+          <div className="ad-two">
+            <Field label="Your UPI ID" hint="Money from every QR code comes here"><input value={f.upi_id} onChange={set('upi_id')} placeholder="yourname@bank" /></Field>
+            <Field label="Name shown in the UPI app"><input value={f.upi_name} onChange={set('upi_name')} maxLength={60} /></Field>
+          </div>
+          <div className="ad-two">
+            <Field label="Minutes to pay" hint="Unpaid orders are cancelled after this"><input type="number" min="5" max="1440" value={f.payment_window_minutes} onChange={set('payment_window_minutes')} /></Field>
+            <Field label="Low-stock warning at"><input type="number" min="0" value={f.low_stock_threshold} onChange={set('low_stock_threshold')} /></Field>
+          </div>
+          <label className="ad-check"><input type="checkbox" checked={f.auto_confirm_payments} onChange={set('auto_confirm_payments')} /> <span><b>Testing only:</b> treat every submitted payment as paid automatically</span></label>
+
+          <h2 className="ad-formblock">Free-order loyalty</h2>
+          <label className="ad-check"><input type="checkbox" checked={f.loyalty_enabled} onChange={set('loyalty_enabled')} /> Loyalty is ON</label>
+          <div className="ad-two">
+            <Field label="Paid orders before a free one"><input type="number" min="1" max="100" value={f.loyalty_every} onChange={set('loyalty_every')} /></Field>
+            <Field label="Free order up to (₹)"><input type="number" min="0" value={f.loyalty_cap} onChange={set('loyalty_cap')} /></Field>
+          </div>
+
+          <h2 className="ad-formblock">Invoice wording</h2>
+          <Field label="Terms & conditions" hint="One point per line"><textarea rows={6} value={f.terms_conditions} onChange={set('terms_conditions')} /></Field>
+          <Field label="Return & refund policy"><textarea rows={3} value={f.return_policy} onChange={set('return_policy')} /></Field>
+          <Field label="Declaration"><textarea rows={2} value={f.declaration} onChange={set('declaration')} /></Field>
+          <Field label="Signatory name"><input value={f.signatory} onChange={set('signatory')} maxLength={80} /></Field>
           <Field label="Invoice footer message"><textarea rows={2} value={f.invoice_footer} onChange={set('invoice_footer')} /></Field>
           {err && <p className="ad-formerr" role="alert">{err}</p>}
           <button className="ad-btn primary" disabled={busy}>{busy ? 'Saving…' : 'Save settings'}</button>

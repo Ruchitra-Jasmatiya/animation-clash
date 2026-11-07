@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -10,6 +10,15 @@ import Preloader from './components/Preloader'
 import Home from './pages/Home'
 import Products from './pages/Products'
 import AdminApp from './pages/admin/AdminApp'
+import Auth from './pages/Auth'
+import Cart from './pages/Cart'
+import Wishlist from './pages/Wishlist'
+import Orders from './pages/Orders'
+import OrderDetail from './pages/OrderDetail'
+import Rewards from './pages/Rewards'
+import OfferStrip from './components/OfferStrip'
+import { ToastProvider } from './lib/toast'
+import { initSession, trackView, useShop } from './lib/shop'
 
 /** Every route change starts at the top; ScrollTrigger re-measures once the new page is in. */
 function ScrollReset() {
@@ -33,6 +42,11 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/orders/:id" element={<OrderDetail />} />
+          <Route path="/rewards" element={<Rewards />} />
           <Route path="/manage/*" element={<AdminApp />} />
           <Route path="*" element={<Products />} />
         </Routes>
@@ -46,18 +60,28 @@ function Shell() {
   const isAdmin = pathname.startsWith('/manage')
   const [ready, setReady] = useState(() => window.location.pathname.startsWith('/manage'))
   const ctx = useMemo(() => ({ ready }), [ready])
+  const { status } = useShop()
+  const done = useCallback(() => setReady(true), [])
+
+  useEffect(() => { if (!isAdmin) initSession() }, [isAdmin])
+  useEffect(() => { trackView(pathname) }, [pathname])
 
   useEffect(() => {
-    document.documentElement.classList.toggle('is-loading', !ready)
-  }, [ready])
+    document.documentElement.classList.toggle('is-loading', !ready && status === 'in')
+  }, [ready, status])
 
   return (
     <AppContext.Provider value={ctx}>
       <ScrollReset />
-      {!isAdmin && <ScrollProgress />}
-      {!isAdmin && <Navbar />}
-      <AnimatedRoutes />
-      <AnimatePresence>{!ready && <Preloader key="pre" onDone={() => setReady(true)} />}</AnimatePresence>
+      {isAdmin ? <AnimatedRoutes /> : status === 'in' ? (
+        <>
+          <ScrollProgress />
+          <Navbar />
+          <AnimatedRoutes />
+          <OfferStrip />
+        </>
+      ) : status === 'checking' ? <div className="boot" aria-label="Loading"><i /></div> : <Auth />}
+      <AnimatePresence>{!ready && status === 'in' && !isAdmin && <Preloader key="pre" onDone={done} />}</AnimatePresence>
     </AppContext.Provider>
   )
 }
@@ -66,7 +90,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <SmoothScroll>
-        <Shell />
+        <ToastProvider>
+          <Shell />
+        </ToastProvider>
       </SmoothScroll>
     </BrowserRouter>
   )
