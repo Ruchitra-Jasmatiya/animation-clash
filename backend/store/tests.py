@@ -211,7 +211,8 @@ class StoreApiTests(APITestCase):
 
     def test_dashboard(self):
         self.login()
-        self.order()
+        oid = self.order().data["id"]
+        self.client.patch(f"/api/orders/{oid}/", {"status": "paid"}, format="json")
         r = self.client.get("/api/dashboard/")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data["orders"], 1); self.assertEqual(len(r.data["daily"]), 14)

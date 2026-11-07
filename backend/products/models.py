@@ -31,6 +31,7 @@ class Product(models.Model):
     flavour = models.CharField(max_length=80, blank=True, default="Pistachio")
     size = models.CharField(max_length=40, blank=True)
     in_stock = models.BooleanField(default=True)
+    stock = models.PositiveIntegerField(default=50, help_text="How many units you have. Orders reduce it; at 0 the site shows Sold out.")
 
     # Either an uploaded file or an image URL (an upload wins when both exist).
     image = models.ImageField(
@@ -50,6 +51,10 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def available(self):
+        return bool(self.in_stock and self.stock > 0)
 
     @property
     def display_image(self):

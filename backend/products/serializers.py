@@ -34,6 +34,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "flavour",
             "size",
             "in_stock",
+            "stock",
             "image",
             "image_url",
             "image_display",

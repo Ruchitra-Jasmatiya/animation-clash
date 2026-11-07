@@ -13,7 +13,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from store.audit import audit, log_login
-from store.auth import ExpiringTokenAuthentication
+from store.auth import CustomerTokenAuthentication, ExpiringTokenAuthentication
 from store.models import LoginAttempt
 
 from .models import Product
@@ -30,16 +30,18 @@ class IsStaff(BasePermission):
 
 
 class IsStaffOrReadOnly(BasePermission):
-    """Anyone can read the catalogue; only staff can change it."""
+    """The catalogue is for signed-in customers (or staff) to read; only staff can change it."""
 
     def has_permission(self, request, view):
-        return request.method in SAFE_METHODS or IsStaff().has_permission(request, view)
+        if request.method in SAFE_METHODS:
+            return bool(request.user and request.user.is_authenticated)
+        return IsStaff().has_permission(request, view)
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    authentication_classes = [ExpiringTokenAuthentication]
+    authentication_classes = [ExpiringTokenAuthentication, CustomerTokenAuthentication]
     permission_classes = [IsStaffOrReadOnly]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     pagination_class = None

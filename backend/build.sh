@@ -6,3 +6,4 @@ python manage.py collectstatic --no-input
 python manage.py migrate --no-input
 python manage.py ensure_admin          # uses ADMIN_USERNAME / ADMIN_PASSWORD env vars
 python manage.py seed_products --if-empty
+python manage.py seed_offers

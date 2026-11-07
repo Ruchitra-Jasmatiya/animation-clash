@@ -21,8 +21,9 @@ from products.views import IsStaff
 
 from .audit import audit
 from .auth import ExpiringTokenAuthentication
-from .models import AuditLog, Coupon, LoginAttempt, Order, OrderItem, SiteMedia, StoreSettings, q2
-from .serializers import CouponSerializer, OrderSerializer, PreviewSerializer, StoreSettingsSerializer
+from .models import AuditLog, Coupon, Customer, LoginAttempt, Order, OrderItem, SiteMedia, StoreSettings, Visit, q2
+from . import services
+from .serializers import CouponSerializer, OrderSerializer, PreviewSerializer, StoreSettingsAdminSerializer as StoreSettingsSerializer
 from .slots import SLOT_INDEX, SLOTS
 
 STAFF = {"authentication_classes": [ExpiringTokenAuthentication], "permission_classes": [IsStaff]}
@@ -43,14 +44,40 @@ class OrderViewSet(StaffViewSet):
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
+        if self.action == "list":
+            services.expire_stale_orders()
         qs = Order.objects.prefetch_related("items")
-        st = self.request.query_params.get("status")
-        if st:
-            qs = qs.filter(status=st)
-        q = (self.request.query_params.get("q") or "").strip()
+        p = self.request.query_params
+        if p.get("status"):
+            qs = qs.filter(status=p["status"])
+        if p.get("payment"):
+            qs = qs.filter(payment_status=p["payment"])
+        if p.get("source"):
+            qs = qs.filter(source=p["source"])
+        q = (p.get("q") or "").strip()
         if q:
-            qs = qs.filter(Q(invoice_no__icontains=q) | Q(customer_name__icontains=q) | Q(phone__icontains=q))
+            qs = qs.filter(Q(invoice_no__icontains=q) | Q(customer_name__icontains=q) | Q(phone__icontains=q)
+                           | Q(email__icontains=q) | Q(upi_ref__icontains=q))
         return qs[:500] if self.action == "list" else qs
+
+    @action(detail=True, methods=["post"], url_path="confirm-payment")
+    def confirm_payment(self, request, pk=None):
+        o = self.get_object()
+        services.confirm_payment(o, by=request.user.get_username())
+        audit(request, "update", "payment", f"Confirmed payment for {o.invoice_no} (₹{o.total}, ref {o.upi_ref or '-'})")
+        o.refresh_from_db()
+        return Response(OrderSerializer(o).data)
+
+    @action(detail=True, methods=["post"], url_path="reject-payment")
+    def reject_payment(self, request, pk=None):
+        o = self.get_object()
+        if o.payment_status == Order.PAID_P:
+            raise serializers.ValidationError({"detail": "This order is already paid."})
+        o.payment_status = Order.REJECTED
+        o.payment_expires_at = timezone.now() + timedelta(minutes=services.StoreSettings.load().payment_window_minutes)
+        o.save(update_fields=["payment_status", "payment_expires_at"])
+        audit(request, "update", "payment", f"Marked payment not found for {o.invoice_no}")
+        return Response(OrderSerializer(o).data)
 
     def perform_create(self, serializer):
         o = serializer.save()
@@ -213,7 +240,8 @@ class DashboardView(APIView):
     permission_classes = STAFF["permission_classes"]
 
     def get(self, request):
-        live = Order.objects.exclude(status=Order.CANCELLED)
+        services.expire_stale_orders()
+        live = Order.objects.exclude(status=Order.CANCELLED).filter(payment_status=Order.PAID_P)
         today = timezone.localdate()
         start = today - timedelta(days=13)
         by_day = {
@@ -228,9 +256,16 @@ class DashboardView(APIView):
         top = (OrderItem.objects.exclude(order__status=Order.CANCELLED).values("name")
                .annotate(qty=Sum("quantity"), revenue=Sum("line_total")).order_by("-qty")[:5])
         return Response({
-            "revenue": str(live.aggregate(t=Sum("total"))["t"] or "0.00"),
+            "revenue": str(q2(live.aggregate(t=Sum("total"))["t"] or 0)),
             "orders": live.count(),
             "pending": Order.objects.filter(status=Order.PENDING).count(),
+            "to_verify": Order.objects.filter(payment_status=Order.SUBMITTED).count(),
+            "online_orders": Order.objects.filter(source="online").exclude(status=Order.CANCELLED).count(),
+            "customers": Customer.objects.count(),
+            "customers_today": Customer.objects.filter(created_at__date=today).count(),
+            "visitors_today": Visit.objects.filter(created_at__date=today).values("visitor_id").distinct().count(),
+            "low_stock": [{"id": p.id, "name": p.name, "stock": p.stock} for p in
+                          Product.objects.filter(stock__lte=StoreSettings.load().low_stock_threshold).order_by("stock")[:8]],
             "products": Product.objects.count(),
             "active_coupons": Coupon.objects.filter(active=True).count(),
             "daily": daily,

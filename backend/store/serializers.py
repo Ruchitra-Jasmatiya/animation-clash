@@ -1,12 +1,14 @@
 import re
 
 from django.db import transaction
+from django.utils import timezone
 from django.db.models import F
 from rest_framework import serializers
 
 from products.models import Product
 
-from .models import Coupon, Order, OrderItem, StoreSettings, q2
+from . import services
+from .models import Coupon, Customer, Festival, Order, OrderItem, Reward, RewardPool, StoreSettings, q2
 from .pricing import price_lines
 
 MAX_PRICE = 10_000_000
@@ -89,6 +91,7 @@ class PreviewSerializer(serializers.Serializer):
         priced = price_lines(lines, self.validated_data.get("coupon_code", ""))
         coupon = priced.pop("coupon")
         priced["coupon_code"] = coupon.code if coupon else ""
+        priced["festival_discount"] = "0.00"
         return {k: str(v) if not isinstance(v, (bool, str)) else v for k, v in priced.items()}
 
 
@@ -99,11 +102,15 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "invoice_no", "customer_name", "phone", "email", "address", "status", "payment_method",
-                  "notes", "coupon_code", "subtotal", "discount", "shipping", "tax", "total", "gst_percent",
-                  "prices_include_gst", "items", "lines", "created_at"]
-        read_only_fields = ["id", "invoice_no", "subtotal", "discount", "shipping", "tax", "total",
-                            "gst_percent", "prices_include_gst", "created_at"]
+        fields = ["id", "invoice_no", "source", "customer", "customer_name", "phone", "email", "address", "status",
+                  "payment_method", "payment_status", "upi_ref", "payment_submitted_at", "payment_expires_at", "paid_at",
+                  "verified_by", "notes", "coupon_code", "festival_name", "festival_discount", "reward_label",
+                  "reward_discount", "loyalty_free", "loyalty_discount", "subtotal", "discount", "shipping", "tax",
+                  "total", "gst_percent", "prices_include_gst", "items", "lines", "created_at"]
+        read_only_fields = ["id", "invoice_no", "source", "customer", "payment_status", "upi_ref", "payment_submitted_at",
+                            "payment_expires_at", "paid_at", "verified_by", "festival_name", "festival_discount",
+                            "reward_label", "reward_discount", "loyalty_free", "loyalty_discount", "subtotal", "discount",
+                            "shipping", "tax", "total", "gst_percent", "prices_include_gst", "created_at"]
 
     def validate_customer_name(self, v):
         v = " ".join(v.split())
@@ -133,15 +140,102 @@ class OrderSerializer(serializers.ModelSerializer):
         ])
         if coupon and order.status != Order.CANCELLED:
             Coupon.objects.filter(pk=coupon.pk).update(used_count=F("used_count") + 1)
+        if order.status != Order.CANCELLED:
+            services.hold_stock(order)
+        if order.status in (Order.PAID, Order.SHIPPED, Order.DELIVERED):
+            order.payment_status = Order.PAID_P
+            order.paid_at = order.paid_at or timezone.now()
+            order.save(update_fields=["payment_status", "paid_at"])
         return order
 
     @transaction.atomic
     def update(self, instance, validated):
         old = instance.status
+        new = validated.get("status", old)
+        if old == Order.CANCELLED and new != old and instance.source == "online":
+            raise serializers.ValidationError({"status": "A cancelled website order can't be restored. Ask the customer to order again."})
+        if new == Order.CANCELLED and old != new:
+            instance = services.cancel_order(instance, note="Cancelled by staff")
+            validated = {k: v for k, v in validated.items() if k != "status"}
+            return super().update(instance, validated)
         order = super().update(instance, validated)
-        if order.coupon_id and old != order.status:
-            if order.status == Order.CANCELLED:
-                Coupon.objects.filter(pk=order.coupon_id, used_count__gt=0).update(used_count=F("used_count") - 1)
-            elif old == Order.CANCELLED:
+        if old == Order.CANCELLED and new != old:  # a staff invoice brought back
+            if order.coupon_id:
                 Coupon.objects.filter(pk=order.coupon_id).update(used_count=F("used_count") + 1)
+            services.hold_stock(order)
+        if new in (Order.PAID, Order.SHIPPED, Order.DELIVERED) and order.payment_status != Order.PAID_P:
+            order.payment_status = Order.PAID_P
+            order.paid_at = order.paid_at or timezone.now()
+            order.save(update_fields=["payment_status", "paid_at"])
         return order
+
+
+class StoreSettingsAdminSerializer(StoreSettingsSerializer):
+    def validate_upi_id(self, v):
+        v = v.strip()
+        if v and not re.fullmatch(r"[A-Za-z0-9._-]{2,}@[A-Za-z][A-Za-z0-9.-]{1,}", v):
+            raise serializers.ValidationError("A UPI ID looks like name@bank.")
+        return v
+
+
+class FestivalSerializer(serializers.ModelSerializer):
+    state = serializers.SerializerMethodField()
+    days_left = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Festival
+        fields = ["id", "name", "date", "start_date", "end_date", "discount_percent", "max_discount", "min_order",
+                  "tagline", "note", "active", "preset", "state", "days_left"]
+        read_only_fields = ["id", "preset", "state", "days_left"]
+
+    def get_state(self, f):
+        today = timezone.localdate()
+        if f.date < today and f.end_date < today:
+            return "past"
+        if f.is_live(today):
+            return "live"
+        if f.active and f.discount_percent > 0:
+            return "scheduled"
+        return "off"
+
+    def get_days_left(self, f):
+        return (f.date - timezone.localdate()).days
+
+    def validate(self, a):
+        start = a.get("start_date", getattr(self.instance, "start_date", None))
+        end = a.get("end_date", getattr(self.instance, "end_date", None))
+        if start and end and end < start:
+            raise serializers.ValidationError({"end_date": "The offer can't end before it starts."})
+        return a
+
+
+class RewardPoolSerializer(serializers.ModelSerializer):
+    shown_as = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RewardPool
+        fields = ["id", "label", "kind", "value", "max_discount", "min_order", "weight", "valid_days", "active", "shown_as"]
+        read_only_fields = ["id", "shown_as"]
+
+    def get_shown_as(self, r):
+        return r.display_label()
+
+    def validate(self, a):
+        kind = a.get("kind", getattr(self.instance, "kind", "flat"))
+        value = a.get("value", getattr(self.instance, "value", 0))
+        if kind == "percent" and value > 90:
+            raise serializers.ValidationError({"value": "A percent reward can't be above 90."})
+        if kind != "shipping" and value <= 0:
+            raise serializers.ValidationError({"value": "Enter a value above 0."})
+        return a
+
+
+class CustomerAdminSerializer(serializers.ModelSerializer):
+    orders = serializers.IntegerField(source="order_count", read_only=True)
+    spent = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True, default=0)
+
+    class Meta:
+        model = Customer
+        fields = ["id", "name", "email", "phone", "address", "is_blocked", "created_at", "last_login_at", "login_count",
+                  "last_ip", "orders", "spent"]
+        read_only_fields = ["id", "name", "email", "phone", "address", "created_at", "last_login_at", "login_count", "last_ip"]

@@ -46,3 +46,19 @@ class OrderAdmin(admin.ModelAdmin):
 admin.site.register(Coupon)
 admin.site.register(SiteMedia)
 admin.site.register(StoreSettings)
+
+
+from .models import Customer, Festival, Reward, RewardPool, Visit  # noqa: E402
+
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ("email", "name", "phone", "login_count", "last_login_at", "is_blocked")
+    search_fields = ("email", "name", "phone")
+
+
+admin.site.register(Festival)
+admin.site.register(RewardPool)
+admin.site.register(Reward)
+admin.site.register(Visit)
+

@@ -36,8 +36,8 @@ class ProductApiTests(APITestCase):
         self.assertEqual(r.status_code, 200)
         self.client.credentials(HTTP_AUTHORIZATION="Token " + r.data["token"])
 
-    def test_public_can_read_but_not_write(self):
-        self.assertEqual(self.client.get("/api/products/").status_code, 200)
+    def test_anonymous_cannot_read_or_write(self):
+        self.assertEqual(self.client.get("/api/products/").status_code, 401)
         r = self.client.post("/api/products/", {"name": "x", "price": "1", "image_url": "https://e.com/a.jpg"})
         self.assertEqual(r.status_code, 401)
 
