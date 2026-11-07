@@ -222,6 +222,8 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
 EMAIL_TIMEOUT = 15
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+BREVO_SENDER = os.environ.get("BREVO_SENDER", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL") or EMAIL_HOST_USER or "MASSUP <no-reply@massup.local>"
 
 OTP_TTL_MINUTES = int(os.environ.get("OTP_TTL_MINUTES", "10"))

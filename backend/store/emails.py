@@ -7,7 +7,39 @@ from django.core.mail import EmailMultiAlternatives
 log = logging.getLogger(__name__)
 
 
+def _parse_from(value):
+    """'MASSUP <a@b.com>' -> ('MASSUP', 'a@b.com')"""
+    value = (value or "").strip()
+    if "<" in value and value.endswith(">"):
+        name, addr = value.rsplit("<", 1)
+        return name.strip().strip('"') or "MASSUP", addr[:-1].strip()
+    return "MASSUP", value
+
+
+def _send_brevo(to, subject, text, html):
+    """Send through Brevo's HTTPS API (works on hosts that block SMTP ports, like Render's free plan)."""
+    import json
+    import urllib.request
+
+    name, addr = _parse_from(getattr(settings, "BREVO_SENDER", "") or settings.DEFAULT_FROM_EMAIL)
+    body = {"sender": {"name": name, "email": addr}, "to": [{"email": to}], "subject": subject, "textContent": text}
+    if html:
+        body["htmlContent"] = html
+    req = urllib.request.Request(
+        "https://api.brevo.com/v3/smtp/email", data=json.dumps(body).encode(), method="POST",
+        headers={"api-key": settings.BREVO_API_KEY, "content-type": "application/json", "accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        return 200 <= r.status < 300
+
+
 def _send(to, subject, text, html=None):
+    if getattr(settings, "BREVO_API_KEY", ""):
+        try:
+            return _send_brevo(to, subject, text, html)
+        except Exception as exc:  # pragma: no cover - depends on the network
+            detail = getattr(exc, "read", lambda: b"")()
+            log.error("Brevo e-mail to %s failed: %s %s", to, exc, detail[:300])
+            return False
     try:
         msg = EmailMultiAlternatives(subject, text, settings.DEFAULT_FROM_EMAIL, [to])
         if html:
