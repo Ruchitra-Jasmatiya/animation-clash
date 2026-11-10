@@ -286,7 +286,8 @@ def _my_order(request, pk):
     try:
         return request.user.orders.prefetch_related("items").get(pk=pk)
     except Order.DoesNotExist:
-        raise serializers.ValidationError({"detail": "Order not found."})
+        from rest_framework.exceptions import NotFound
+        raise NotFound("Order not found.")
 
 
 class SubmitPaymentView(CustomerAPI):
