@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /manage
+Disallow: /admin
+Disallow: /api/
+Disallow: /cart
+Disallow: /orders
+Disallow: /wishlist
+Disallow: /rewards
+
+Sitemap: https://massup-kohl.vercel.app/sitemap.xml
