@@ -164,6 +164,11 @@ STORAGES = {
 }
 
 
+# Permanent uploads: set CLOUDINARY_URL on Render (see README). Without it, uploads stay on local disk.
+if os.environ.get("CLOUDINARY_URL"):
+    STORAGES["default"] = {"BACKEND": "config.cloud_storage.CloudinaryStorage"}
+
+
 # MEDIA FILES
 MEDIA_URL = "/media/"
 
